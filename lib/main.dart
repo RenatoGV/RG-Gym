@@ -1,5 +1,7 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:provider/provider.dart';
 import 'package:rg_gym/config/routes/app_router.dart';
 import 'package:rg_gym/config/theme/app_theme.dart';
@@ -15,9 +17,22 @@ import 'package:rg_gym/screens/tabs/routines/execution.dart';
 import 'package:rg_gym/screens/tabs/routines/exercise_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/routine_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/workout_detail.dart';
+import 'package:rg_gym/service/workout_foreground.dart';
+import 'package:rg_gym/service/workout_notification.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterForegroundTask.initCommunicationPort();
+  
+  WorkoutForeground.init();
+  await WorkoutForeground.requestPermissions();
+
+  await WorkoutNotification.initialize();
+
+  AwesomeNotifications().setListeners(
+    onActionReceivedMethod: NotificationController.onActionReceivedMethod,
+  );
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -171,5 +186,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+}
+
+class NotificationController {
+  @pragma('vm:entry-point')
+  static Future<void> onActionReceivedMethod(
+    ReceivedAction receivedAction,
+  ) async {
+    if (receivedAction.buttonKeyPressed == 'CONTINUE_WORKOUT' ) {
+      await WorkoutNotification.cancelRestFinishedNotification();
+    }
   }
 }

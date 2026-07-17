@@ -26,6 +26,7 @@ class Execution extends StatefulWidget {
 
 class _ExecutionState extends State<Execution> {
   late WorkoutSessionProvider _sessionProvider;
+  bool _workoutStarted = false;
 
   @override
   void didChangeDependencies() {
@@ -37,14 +38,19 @@ class _ExecutionState extends State<Execution> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _sessionProvider.startWorkout(widget.workout);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _sessionProvider.startWorkout(widget.workout);
+
+      if(mounted) {
+        setState(() {
+          _workoutStarted = true;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
-    _sessionProvider.finishWorkout();
     super.dispose();
   }
 
@@ -52,7 +58,7 @@ class _ExecutionState extends State<Execution> {
   Widget build(BuildContext context) {
     final session = context.watch<WorkoutSessionProvider>().session;
 
-    if (session == null) {
+    if (!_workoutStarted) {
       return const Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
@@ -61,155 +67,204 @@ class _ExecutionState extends State<Execution> {
       );
     }
 
+    if (session == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+
+      return const SizedBox.shrink();
+    }
+
     final Exercise currentExercise = exercises.firstWhere((e) => e.id == session.currentExercise.exercise);
-    
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        title: widget.workout.name,
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const .symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: .start,
-                children: [
-                  const SizedBox(height: 20),
-                  Text('Ejercicio ${session.exerciseIndex + 1}/${session.workout.trainingExercises!.length}', style: TextStyle(color: AppColors.primary, fontWeight: .bold)),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: .start,
-                          children: [
-                            Text(
-                              currentExercise.name,
-                              maxLines: 2,
-                              style: TextStyle(fontSize: 20, fontWeight: .w900),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              [...currentExercise.primaryMuscles, ...currentExercise.secondaryMuscles]
-                                .map((id) => muscleGroups.firstWhere((m) => m.id == id).name).join(', '),
-                              style: TextStyle(color: AppColors.text),
-                            )
-                          ],
-                        )
-                      ),
-                      IconButton(
-                        onPressed: () => {
-                          session.pause(),
-                          
-                          Navigator.pushNamed(
-                            context,
-                            '/exercise/info',
-                            arguments: currentExercise,
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        await _confirmExit();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: CustomAppBar(
+          title: widget.workout.name,
+          onBack: _confirmExit
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const .symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: .start,
+                  children: [
+                    const SizedBox(height: 20),
+                    Text('Ejercicio ${session.exerciseIndex + 1}/${session.workout.trainingExercises!.length}', style: TextStyle(color: AppColors.primary, fontWeight: .bold)),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: .start,
+                            children: [
+                              Text(
+                                currentExercise.name,
+                                maxLines: 2,
+                                style: TextStyle(fontSize: 20, fontWeight: .w900),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                [...currentExercise.primaryMuscles, ...currentExercise.secondaryMuscles]
+                                  .map((id) => muscleGroups.firstWhere((m) => m.id == id).name).join(', '),
+                                style: TextStyle(color: AppColors.text),
+                              )
+                            ],
                           )
-                        },
-                        icon: Icon(Icons.info_outline),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Stack(
-                    children: [
-                      Container(
-                        height: 230,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Center(
-                          child: Image.asset(
-                            currentExercise.gif,
-                            fit: BoxFit.contain,
+                        IconButton(
+                          onPressed: () => {
+                            session.pause(),
+                            
+                            Navigator.pushNamed(
+                              context,
+                              '/exercise/info',
+                              arguments: currentExercise,
+                            )
+                          },
+                          icon: Icon(Icons.info_outline, color: Colors.white),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Stack(
+                      children: [
+                        Container(
+                          height: 230,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Image.asset(
+                              currentExercise.gif,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  if (session.currentExercise.note != null && session.currentExercise.note!.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.backgroundSecondary,
-                        borderRadius: BorderRadius.circular(10)
-                      ),
-                      width: .infinity,
-                      child: Text(session.currentExercise.note!)
+                      ],
                     ),
-                  const SizedBox(height: 20),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: session.currentExercise.sets.length,
-                    itemBuilder: (context, index) {
-                      bool isLast = index == session.currentExercise.sets.length - 1;
-                      bool isCurrentSet = index ==  session.setIndex && session.phase == .execution;
-                      bool isCompleted = index < session.setIndex || (index == session.setIndex && session.phase == .rest) || session.phase == .finished;
+                    const SizedBox(height: 20),
+                    if (session.currentExercise.note != null && session.currentExercise.note!.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.backgroundSecondary,
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        width: .infinity,
+                        child: Text(session.currentExercise.note!)
+                      ),
+                    const SizedBox(height: 20),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: session.currentExercise.sets.length,
+                      itemBuilder: (context, index) {
+                        bool isLast = index == session.currentExercise.sets.length - 1;
+                        bool isCurrentSet = index ==  session.setIndex && session.phase == .execution;
+                        bool isCompleted = index < session.setIndex || (index == session.setIndex && session.phase == .rest) || session.phase == .finished;
 
-                      return ExecutionSetItem(
-                        index: index + 1,
-                        type: session.currentExercise.type,
-                        set: session.currentExercise.sets[index],
-                        isLast: isLast,
-                        isCurrentSet: isCurrentSet,
-                        isCompleted: isCompleted
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  const Text("Lista de ejercicios", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: session.workout.trainingExercises!.length,
-                    itemBuilder: (context, index) {
-                      bool isCurrentExercise = index ==  session.exerciseIndex;
-                      bool isCompleted = index < session.exerciseIndex || session.phase == .finished;
+                        return ExecutionSetItem(
+                          index: index + 1,
+                          type: session.currentExercise.type,
+                          set: session.currentExercise.sets[index],
+                          isLast: isLast,
+                          isCurrentSet: isCurrentSet,
+                          isCompleted: isCompleted
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("Lista de ejercicios", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 20),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: session.workout.trainingExercises!.length,
+                      itemBuilder: (context, index) {
+                        bool isCurrentExercise = index ==  session.exerciseIndex;
+                        bool isCompleted = index < session.exerciseIndex || session.phase == .finished;
 
-                      return ExecutionExerciseItem(
-                        index: index + 1,
-                        trainingExercise: widget.workout.trainingExercises![index],
-                        isCurrentExercise: isCurrentExercise,
-                        isCompleted: isCompleted
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 300)
-                ]
-              ),
-            ),
-            Align(
-              alignment: .bottomCenter,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundSecondary,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
-                ),
-                child: Column(
-                  mainAxisSize: .min,
-                  children: [
-                    const SizedBox(height: 15),
-                    _header(session),
-                    const SizedBox(height: 15),
-                    _counter(session),
-                    const SizedBox(height: 15),
-                    _buttons(session),
-                    const SizedBox(height: 15)
+                        return ExecutionExerciseItem(
+                          index: index + 1,
+                          trainingExercise: widget.workout.trainingExercises![index],
+                          isCurrentExercise: isCurrentExercise,
+                          isCompleted: isCompleted
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 300)
                   ]
                 ),
+              ),
+              Align(
+                alignment: .bottomCenter,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundSecondary,
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
+                  ),
+                  child: Column(
+                    mainAxisSize: .min,
+                    children: [
+                      const SizedBox(height: 15),
+                      _header(session),
+                      const SizedBox(height: 15),
+                      _counter(session),
+                      const SizedBox(height: 15),
+                      _buttons(session),
+                      const SizedBox(height: 15)
+                    ]
+                  ),
+                )
               )
-            )
-          ],
+            ],
+          )
         )
       )
     );
+  }
+
+  Future<void> _confirmExit() async {
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('¿Salir del entrenamiento?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
+          content: const Text('Si sales ahora, el entrenamiento actual se perderá.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Cancelar', style: TextStyle(color: AppColors.primary)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Salir'),
+            )
+          ],
+        );
+      },
+    );
+
+    if (shouldExit == true && mounted) {
+      await _sessionProvider.finishWorkout();
+    }
   }
 }
 
@@ -230,6 +285,7 @@ Widget _counter(WorkoutSessionManager session) {
             IconButton(
               onPressed: () {},
               icon: Icon(Icons.timer_10_select_rounded),
+              color: AppColors.text,
             ) :
             null,
         ),
@@ -245,15 +301,15 @@ Widget _counter(WorkoutSessionManager session) {
         ),
         SizedBox(
           width: 48,
-          child: IconButton(
-            onPressed: () =>
-                session.isPaused ? session.resume() : session.pause(),
-            icon: Icon(
-              session.isPaused
-                  ? Icons.play_arrow_rounded
-                  : Icons.pause_rounded,
-            ),
-          ),
+          child: session.phase != .finished ?
+            IconButton(
+              onPressed: () => session.isPaused ? session.resume() : session.pause(),
+              icon: Icon(
+                session.isPaused ? Icons.play_arrow_rounded: Icons.pause_rounded,
+                color: AppColors.text,
+              ),
+            ) :
+            null,
         ),
       ],
     )
@@ -276,16 +332,8 @@ Widget _buttons(WorkoutSessionManager session) {
         Expanded(
           child: FilledButton(
             onPressed: () => session.next(),
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              )
-            ),
             child: Text(
-              isStarting ? 'Comenzar' : 'Siguiente',
+              session.phase == .finished ? 'Terminar' : isStarting ? 'Comenzar' : 'Siguiente',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           )

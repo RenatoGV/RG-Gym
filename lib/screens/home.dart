@@ -54,6 +54,19 @@ class CustomNavigationBar extends StatelessWidget {
       data: NavigationBarThemeData(
         indicatorColor: AppColors.primary,
         height: 70,
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+          (states) {
+            if (states.contains(WidgetState.selected)) {
+              return const IconThemeData(
+                color: Colors.white,
+              );
+            }
+
+            return IconThemeData(
+              color: Colors.white,
+            );
+          },
+        )
       ),
       child: NavigationBar(
         backgroundColor: AppColors.backgroundSecondary,

@@ -3,15 +3,28 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 class WorkoutForeground {
   static const int serviceId = 1001;
 
+  static Future<void> requestPermissions() async {
+    final permission = await FlutterForegroundTask.checkNotificationPermission();
+
+    if (permission != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+  }
+
+  static void listenToEvents(void Function(Object data) onData) {
+    FlutterForegroundTask.addTaskDataCallback(onData);
+  }
+
   static Future<void> init() async {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'workout_foreground_service',
         channelName: 'Entrenamiento',
         channelDescription: 'Mantiene activo el entrenamiento mientras se ejecuta en segundo plano.',
-        channelImportance: .LOW,
-        priority: .LOW,
-        onlyAlertOnce: true
+        channelImportance: .HIGH,
+        priority: .HIGH,
+        onlyAlertOnce: true,
+        showWhen: true
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,
@@ -19,15 +32,13 @@ class WorkoutForeground {
       ),
       foregroundTaskOptions: ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.repeat(1000),
-        autoRunOnBoot: true
+        autoRunOnBoot: false,
       )
     );
   }
 
   static Future<void> start() async {
-    if (await FlutterForegroundTask.isRunningService) {
-      return;
-    }
+    if (await FlutterForegroundTask.isRunningService) return;
 
     await FlutterForegroundTask.startService(
       serviceId: serviceId,
@@ -38,9 +49,7 @@ class WorkoutForeground {
   }
 
   static Future<void> stop() async {
-    if (!await FlutterForegroundTask.isRunningService) {
-      return;
-    }
+    if (!await FlutterForegroundTask.isRunningService) return;
 
     await FlutterForegroundTask.stopService();
   }
@@ -62,27 +71,20 @@ void startCallback() {
 
 class WorkoutTaskHandler extends TaskHandler {
   @override
-  Future<void> onStart(
-    DateTime timestamp,
-    TaskStarter starter,
-  ) async {
-    print('Workout foreground service iniciado');
-  }
+  Future<void> onStart(DateTime timestamp, TaskStarter starter) async {}
 
   @override
   void onRepeatEvent(DateTime timestamp) {
-    print('Tick: $timestamp');
+    FlutterForegroundTask.sendDataToMain({
+      'type': 'tick',
+    });
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, bool _) async {
-    print('Workout foreground service detenido');
-  }
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {}
 
   @override
-  void onNotificationButtonPressed(String id) {
-    print('Botón presionado: $id');
-  }
+  void onNotificationButtonPressed(String id) {}
 
   @override
   void onNotificationPressed() {
@@ -90,7 +92,5 @@ class WorkoutTaskHandler extends TaskHandler {
   }
 
   @override
-  void onNotificationDismissed() {
-    print('Notificación descartada');
-  }
+  void onNotificationDismissed() {}
 }

@@ -1,6 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:rg_gym/config/data/exercises.dart';
+import 'package:rg_gym/models/exercise.dart';
 import 'package:rg_gym/models/training_exercise.dart';
 import 'package:rg_gym/models/workout.dart';
 
@@ -13,10 +13,15 @@ enum WorkoutPhase {
 
 class WorkoutSessionManager extends ChangeNotifier {
   final Workout workout;
+  final VoidCallback? onFinished;
+  final VoidCallback? onRestFinished;
 
-  WorkoutSessionManager(this.workout);
-
-  Timer? _timer;
+  WorkoutSessionManager(
+    this.workout, {
+      this.onFinished,
+      this.onRestFinished
+    }
+  );
 
   DateTime? _workoutStart;
   DateTime? _pauseStart;
@@ -30,6 +35,8 @@ class WorkoutSessionManager extends ChangeNotifier {
 
   WorkoutPhase phase = WorkoutPhase.preparation;
 
+  bool _restFinishedNotified = false;
+
   bool isPaused = false;
 
   bool get isFinished => phase == .finished;
@@ -42,8 +49,48 @@ class WorkoutSessionManager extends ChangeNotifier {
 
   bool get isLastSet => setIndex == currentExercise.sets.length - 1;
 
+  String get currentExerciseName {
+    return currentExerciseData.name;
+  }
+
+  String get notificationTitle {
+    switch (phase) {
+      case WorkoutPhase.preparation:
+        return 'Preparación • $remainingText';
+
+      case WorkoutPhase.execution:
+        return '$currentExerciseName • $remainingText';
+
+      case WorkoutPhase.rest:
+        return 'Descanso • $remainingText';
+
+      case WorkoutPhase.finished:
+        return 'Finalizado';
+    }
+  }
+
+  String get notificationText {
+    switch (phase) {
+      case WorkoutPhase.preparation:
+        return '$currentExerciseName • Próximo ejercicio';
+
+      case WorkoutPhase.execution:
+        return executionSummary;
+
+      case WorkoutPhase.rest:
+        return 'Siguiente: $currentExerciseName';
+
+      case WorkoutPhase.finished:
+        return 'Entrenamiento completado';
+    }
+  }
+
   String get remainingText {
     final seconds = phaseTime.inSeconds.remainder(60);
+
+    if(phase == .finished) {
+      return '00:00';
+    }
 
     if(phase == .preparation) {
       return seconds.toString().padLeft(2, '0');
@@ -53,9 +100,82 @@ class WorkoutSessionManager extends ChangeNotifier {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  void start() {
-    _timer?.cancel();
+  String get executionSummary {
+    final set = currentSet;
 
+    switch (currentExercise.type) {
+      case TrainingType.repsWeight:
+        return 'Serie ${setIndex + 1}: ${set.reps} reps • ${set.weight} kg';
+
+      case TrainingType.reps:
+        return 'Serie ${setIndex + 1}: ${set.reps} repeticiones';
+
+      case TrainingType.weight:
+        return 'Serie ${setIndex + 1}: ${set.weight} kg';
+
+      case TrainingType.time:
+        return 'Serie ${setIndex + 1}: $remainingText';
+    }
+  }
+
+  Exercise get currentExerciseData {
+    return exercises.firstWhere(
+      (e) => e.id == currentExercise.exercise,
+    );
+  }
+
+  void tick() {
+    if (isPaused || isFinished) return;
+
+    switch (phase) {
+      case WorkoutPhase.preparation:
+      case WorkoutPhase.rest:
+        _decreasePhaseTime();
+        break;
+
+      case WorkoutPhase.execution:
+        _updateExecutionTime();
+        break;
+
+      case WorkoutPhase.finished:
+        return;
+    }
+
+    notifyListeners();
+  }
+
+  void _decreasePhaseTime() {
+    if (phaseTime <= Duration.zero) return;
+
+    phaseTime -= const Duration(seconds: 1);
+
+    if (phaseTime <= Duration.zero) {
+      phaseTime = Duration.zero;
+
+      if(phase == .rest && !_restFinishedNotified) {
+        _restFinishedNotified = true;
+        onRestFinished?.call();
+      }
+    }
+  }
+
+  void _updateExecutionTime() {
+    if (currentExercise.type == TrainingType.time) {
+      if (phaseTime > Duration.zero) {
+        phaseTime -= const Duration(seconds: 1);
+      }
+
+      if (phaseTime < Duration.zero) {
+        phaseTime = Duration.zero;
+      }
+
+      return;
+    }
+
+    phaseTime += const Duration(seconds: 1);
+  }
+
+  void start() {
     exerciseIndex = 0;
     setIndex = 0;
 
@@ -65,14 +185,13 @@ class WorkoutSessionManager extends ChangeNotifier {
     _workoutStart = DateTime.now();
 
     isPaused = false;
-
+    
     _startPreparation();
   }
 
   void finish() {
-    _timer?.cancel();
-
     isPaused = false;
+
     phase = .finished;
 
     if(_workoutStart != null) {
@@ -82,58 +201,35 @@ class WorkoutSessionManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _startPreparation() {
-    phase = .preparation;
-    notifyListeners();
-
-    _startTimer(preparationTime);
-  }
-
-  void _startExercise() {
-    phase = .execution;
-    notifyListeners();
-
-    if(currentExercise.type == .time) {
-      _startTimer(currentSet.time!);
-    } else {
-      phaseTime = Duration.zero;
-      _startStopwatch();
-    }
-  }
-
-  void _startStopwatch({Duration from = Duration.zero}) {
-    _timer?.cancel();
-
-    phaseTime = from;
-
-    _timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        phaseTime += const Duration(seconds: 1);
-        notifyListeners();
-      }
-    );
-  }
-
   void next() {
     isPaused = false;
+
     switch(phase) {
       case .preparation:
         _startExercise();
         break;
+
       case .execution:
         _afterExecution();
         break;
+
       case .rest:
         _afterRest();
         break;
+
       case .finished:
+        Future.microtask(() {
+          onFinished?.call();
+        });
+        // TODO: Guardar historial
         break;
     }
   }
 
+  
   void previous() {
     isPaused = false;
+
     switch(phase) {
       case .preparation:
         _previousPreparation();
@@ -144,12 +240,64 @@ class WorkoutSessionManager extends ChangeNotifier {
         break;
 
       case .rest:
+      case .finished:
         _previousRest();
         break;
-
-      case .finished:
-        break;
     }
+  }
+
+  void _startPreparation() {
+    phase = WorkoutPhase.preparation;
+    phaseTime = preparationTime;
+
+    notifyListeners();
+  }
+
+  void _startExercise() {
+    phase = .execution;
+
+    if (currentExercise.type == TrainingType.time) {
+      phaseTime = currentSet.time ?? Duration.zero;
+    } else {
+      phaseTime = Duration.zero;
+    }
+
+    notifyListeners();
+  }
+
+  
+  void _startRest() {
+    phase = .rest;
+    _restFinishedNotified = false;
+    phaseTime = Duration(seconds: currentExercise.restTime);
+
+    notifyListeners();
+  }
+
+  
+  void _afterExecution() {
+    if(currentExercise.restTime > 0) {
+      _startRest();
+    } else {
+      _afterRest();
+    }
+  }
+
+  void _afterRest() {
+    if(!isLastSet) {
+      setIndex++;
+      _startExercise();
+      return;
+    }
+
+    if(!isLastExercise) {
+      exerciseIndex++;
+      setIndex = 0;
+      _startPreparation();
+      return;
+    }
+
+    finish();
   }
 
   void _previousExecution() {
@@ -180,66 +328,10 @@ class WorkoutSessionManager extends ChangeNotifier {
     _startExercise();
   }
 
-  void _afterExecution() {
-    if(currentExercise.restTime > 0) {
-      _startRest();
-    } else {
-      _afterRest();
-    }
-  }
-
-  void _afterRest() {
-    if(!isLastSet) {
-      setIndex++;
-      _startExercise();
-      return;
-    }
-
-    if(!isLastExercise) {
-      exerciseIndex++;
-      setIndex = 0;
-      _startPreparation();
-      return;
-    }
-
-    finish();
-  }
-
-  void _startRest() {
-    phase = .rest;
-    notifyListeners();
-
-    _startTimer(Duration(seconds: currentExercise.restTime));
-  }
-
-  void _startTimer(Duration duration) {
-    _timer?.cancel();
-
-    phaseTime = duration;
-
-    _timer = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        if (phaseTime > Duration.zero) {
-          phaseTime -= const Duration(seconds: 1);
-        }
-
-        if (phaseTime < Duration.zero) {
-          phaseTime = Duration.zero;
-        }
-
-        notifyListeners();
-      }
-    );
-  }
-
   void pause() {
-    if(_timer == null || isPaused) return;
+    if (isPaused || isFinished) return;
 
     _pauseStart = DateTime.now();
-
-    _timer?.cancel();
-    _timer = null;
 
     isPaused = true;
 
@@ -247,39 +339,17 @@ class WorkoutSessionManager extends ChangeNotifier {
   }
 
   void resume() {
-    if(!isPaused) return;
+    if (!isPaused || isFinished) return;
 
     if (_pauseStart != null && _workoutStart != null) {
       final pausedTime = DateTime.now().difference(_pauseStart!);
+
       _workoutStart = _workoutStart!.add(pausedTime);
     }
-    
+
+    _pauseStart = null;
     isPaused = false;
 
     notifyListeners();
-    
-    switch(phase) {
-      case .preparation:
-      case .rest:
-        _startTimer(phaseTime);
-        break;
-
-      case .execution:
-        if(currentExercise.type == .time) {
-          _startTimer(phaseTime);
-        } else {
-          _startStopwatch(from: phaseTime);
-        }
-        break;
-      
-      case .finished:
-        break;
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 }

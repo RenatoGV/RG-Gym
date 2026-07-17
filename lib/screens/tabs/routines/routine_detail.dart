@@ -88,9 +88,8 @@ class RoutineDetail extends StatelessWidget {
         onPressed: () async {
           await showWorkoutDialog(context, routineId: routine.id);
         },
-        backgroundColor: AppColors.primary,
-        label: Text('Agregar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-        icon: Icon(Icons.add, color: Colors.white, fontWeight: FontWeight.w900),
+        label: Text('Agregar', style: TextStyle(fontWeight: FontWeight.w900)),
+        icon: Icon(Icons.add, fontWeight: FontWeight.w900),
       ),
     );
   }

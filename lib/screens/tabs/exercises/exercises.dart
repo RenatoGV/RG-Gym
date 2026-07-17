@@ -159,9 +159,8 @@ class _ExercisesState extends State<Exercises> {
             loadMarkers();
           });
         },
-        backgroundColor: AppColors.primary,
-        label: Text('Girar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-        icon: Icon(Icons.replay_outlined, color: Colors.white, fontWeight: FontWeight.w900),
+        label: Text('Girar', style: TextStyle(fontWeight: FontWeight.w900)),
+        icon: Icon(Icons.replay_outlined, fontWeight: FontWeight.w900),
       ),
     );
   }

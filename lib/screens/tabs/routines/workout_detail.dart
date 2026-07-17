@@ -47,19 +47,16 @@ class WorkoutDetail extends StatelessWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => Navigator.pushNamed(
-                        context,
-                        '/execution',
-                        arguments: workout,
-                      ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      )
-                    ),
+                    onPressed: () => {
+                      if(workout.trainingExercises != null && workout.trainingExercises!.isNotEmpty) {
+                        Navigator.pushNamed(
+                          context,
+                          '/execution',
+                          arguments: workout,
+                        ),
+                      }
+
+                    },
                     child: const Text(
                       'Iniciar entrenamiento',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -72,58 +69,56 @@ class WorkoutDetail extends StatelessWidget {
         )
       ),
       body: (workout.trainingExercises == null || workout.trainingExercises!.isEmpty) ?
-        Expanded(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/icons/dumbbell.svg',
-                  width: 50,
-                  height: 50
-                ),
-                const SizedBox(height: 8),
-                const Text('Ejercicios', style: TextStyle(color: AppColors.primary, fontSize: 20, fontWeight: .bold)),
-                const SizedBox(height: 4),
-                const Text('Añade ejercicios a tu entrenamiento', style: TextStyle(color: AppColors.text)),
-                const SizedBox(height: 20),
-                InkWell(
-                  onTap: () async {
-                    await Navigator.pushNamed(
-                      context,
-                      '/exercises',
-                      arguments: {
-                        'workout': workout,
-                        'routineId': routineId
-                      }
-                    );
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.add,
-                          size: 18,
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                'assets/icons/dumbbell.svg',
+                width: 50,
+                height: 50
+              ),
+              const SizedBox(height: 8),
+              const Text('Ejercicios', style: TextStyle(color: AppColors.primary, fontSize: 20, fontWeight: .bold)),
+              const SizedBox(height: 4),
+              const Text('Añade ejercicios a tu entrenamiento', style: TextStyle(color: AppColors.text)),
+              const SizedBox(height: 20),
+              InkWell(
+                onTap: () async {
+                  await Navigator.pushNamed(
+                    context,
+                    '/exercises',
+                    arguments: {
+                      'workout': workout,
+                      'routineId': routineId
+                    }
+                  );
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.add,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        "Agregar ejercicios",
+                        style: TextStyle(
                           color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
                         ),
-                        SizedBox(width: 10),
-                        Text(
-                          "Agregar ejercicios",
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         )
       : CustomScrollView(
@@ -289,9 +284,8 @@ class WorkoutDetail extends StatelessWidget {
             }
           );
         },
-        backgroundColor: AppColors.primary,
-        label: Text('Agregar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-        icon: Icon(Icons.add, color: Colors.white, fontWeight: FontWeight.w900),
+        label: Text('Agregar', style: TextStyle(fontWeight: FontWeight.w900)),
+        icon: Icon(Icons.add, fontWeight: FontWeight.w900),
       ),
     );
   }

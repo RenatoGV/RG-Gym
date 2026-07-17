@@ -188,6 +188,7 @@ class _SearchExerciseState extends State<SearchExercise> {
                 controller: searchController,
                 focusNode: searchFocus,
                 cursorColor: Colors.white,
+                
                 decoration: InputDecoration(
                   hintText: 'Buscar',
                   prefixIcon: const Icon(Icons.search),
@@ -279,10 +280,7 @@ class _SearchExerciseState extends State<SearchExercise> {
             width: .infinity,
             height: 55,
             child: FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary
-              ),
-              label: Text('Agregar ${selectedExercises.length} ejercicio${(selectedExercises.length > 1) ? 's' : ''}', style: TextStyle(color: Colors.white, fontWeight: .bold)),
+              label: Text('Agregar ${selectedExercises.length} ejercicio${(selectedExercises.length > 1) ? 's' : ''}', style: TextStyle(fontWeight: .bold)),
               onPressed: () async {
                 await context.read<RoutinesProvider>().addTrainingExercises(routineId!, workout!, selectedExercises);
 

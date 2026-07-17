@@ -10,6 +10,13 @@ class RoutinesProvider extends ChangeNotifier {
 
   List<Routine> get routines => List.unmodifiable(_routines);
 
+  Future<void> importRoutines(List<Routine> routines) async {
+    _routines = routines;
+
+    notifyListeners();
+    await save();
+  }
+
   Future<void> load() async {
     _routines = await RoutineStorage.getAll();
     notifyListeners();

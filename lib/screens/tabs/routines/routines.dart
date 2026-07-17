@@ -4,6 +4,7 @@ import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/models/routine.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/routine_item.dart';
+import 'package:rg_gym/service/routine_export.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 import 'package:rg_gym/shared/widgets/fixed_line_formatter.dart';
 import 'package:uuid/uuid.dart';
@@ -30,7 +31,15 @@ class RoutinesScreen extends StatelessWidget {
               style: TextStyle(color: AppColors.text),
             ),
           ),
-        )
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              _showSettingsDialog(context);
+            },
+          )
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,4 +235,102 @@ Future<bool?> showRoutineDialog(BuildContext context, { Routine? routine }) {
       );
     }
   );
+}
+
+void _showSettingsDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Configuración'),
+
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+            ),
+          ],
+        ),
+
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.upload),
+                label: const Text('Exportar rutinas'),
+                onPressed: () async {
+                  Navigator.pop(dialogContext);
+                  await _exportRoutines(context);
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.download),
+                label: const Text('Importar rutinas'),
+                onPressed: () async {
+                  Navigator.pop(dialogContext);
+                  await _importRoutines(context);
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _exportRoutines(BuildContext context) async {
+  try {
+    final routines = context.read<RoutinesProvider>().routines;
+
+    await RoutineExport.exportRoutines(routines);
+  } catch (e) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al exportar rutinas: $e'),
+      ),
+    );
+  }
+}
+
+Future<void> _importRoutines(BuildContext context) async {
+  try {
+    final routines = await RoutineExport.importRoutines();
+
+    if (routines == null) return;
+
+    if (!context.mounted) return;
+
+    await context.read<RoutinesProvider>().importRoutines(routines);
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Rutinas importadas correctamente'),
+      ),
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al importar rutinas: $e'),
+      ),
+    );
+  }
 }

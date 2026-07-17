@@ -330,13 +330,13 @@ String getTimeSummary(Workout workout) {
       switch (exercise.type) {
         case .repsWeight:
         case .reps:
-          totalSeconds += (set.reps ?? 0);
+          totalSeconds += (set.reps ?? 0) * 3;
           break;
         case .time:
           totalSeconds += set.time?.inSeconds ?? 0;
           break;
         case .weight:
-          totalSeconds += 1;
+          totalSeconds += 3;
           break;
       }
 

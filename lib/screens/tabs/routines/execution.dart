@@ -189,21 +189,29 @@ class _ExecutionState extends State<Execution> {
                     const SizedBox(height: 20),
                     const Text("Lista de ejercicios", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 20),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: session.workout.trainingExercises!.length,
-                      itemBuilder: (context, index) {
-                        bool isCurrentExercise = index ==  session.exerciseIndex;
-                        bool isCompleted = index < session.exerciseIndex || session.phase == .finished;
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.backgroundSecondary,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: session.workout.trainingExercises!.length,
+                        itemBuilder: (context, index) {
+                          final trainingExercise = session.workout.trainingExercises![index];
 
-                        return ExecutionExerciseItem(
-                          index: index + 1,
-                          trainingExercise: widget.workout.trainingExercises![index],
-                          isCurrentExercise: isCurrentExercise,
-                          isCompleted: isCompleted
-                        );
-                      },
+                          return ExecutionExerciseItem(
+                            index: index,
+                            trainingExercise: trainingExercise,
+                            isNextExercise: session.isNextExercise(trainingExercise),
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(height: 300)
                   ]

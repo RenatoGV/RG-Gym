@@ -1,23 +1,23 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rg_gym/config/data/exercises.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/helpers/format_helper.dart';
 import 'package:rg_gym/models/exercise.dart';
 import 'package:rg_gym/models/training_exercise.dart';
+import 'package:rg_gym/providers/workout_session_provider.dart';
 
 class ExecutionExerciseItem extends StatefulWidget {
   final int index;
   final TrainingExercise trainingExercise;
-  final bool isCurrentExercise;
-  final bool isCompleted;
+  final bool isNextExercise;
 
   const ExecutionExerciseItem({
     super.key,
     required this.index,
     required this.trainingExercise,
-    required this.isCurrentExercise,
-    required this.isCompleted,
+    required this.isNextExercise,
   });
 
   @override
@@ -27,13 +27,17 @@ class ExecutionExerciseItem extends StatefulWidget {
 class _ExecutionExerciseItemState extends State<ExecutionExerciseItem> {
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<WorkoutSessionProvider>().session!;
     Exercise exercise = exercises.firstWhere((e) => e.id == widget.trainingExercise.exercise);
+
+    final isCurrentExercise = session.exerciseIndex == widget.index;
+    final isCompleted = session.isExerciseCompleted(widget.index);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: const BoxDecoration(
-        color: AppColors.background,
+        color: Colors.transparent,
         border: Border(
           bottom: BorderSide(
             color: AppColors.gray,
@@ -52,7 +56,7 @@ class _ExecutionExerciseItemState extends State<ExecutionExerciseItem> {
               child: Image.asset(
                 exercise.gif,
                 fit: BoxFit.cover,
-                opacity: widget.isCompleted ? AlwaysStoppedAnimation(0.5) : AlwaysStoppedAnimation(1),
+                opacity: isCompleted ? AlwaysStoppedAnimation(0.5) : AlwaysStoppedAnimation(1),
               ),
             ),
           ),
@@ -64,29 +68,58 @@ class _ExecutionExerciseItemState extends State<ExecutionExerciseItem> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                if(isCurrentExercise || isCompleted || widget.isNextExercise)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isCompleted ? AppColors.gray : isCurrentExercise ? AppColors.primary : AppColors.completed,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      maxLines: 1,
+                      overflow: .visible,
+                      isCompleted ? 'Realizado' : isCurrentExercise ? 'En ejecución' : 'Siguiente',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+
                 Text(
                   exercise.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: widget.isCompleted ? AppColors.text : widget.isCurrentExercise ? AppColors.primary : Colors.white,
+                    color: isCompleted ? AppColors.text : isCurrentExercise ? AppColors.primary : Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    decoration: widget.isCompleted ? .lineThrough : .none
+                    decoration: isCompleted ? .lineThrough : .none
                   ),
                 ),
-
-                const SizedBox(height: 10),
 
                 AutoSizeText(
                   maxLines: 1,
                   minFontSize: 12,
                   getTrainingSummary(widget.trainingExercise),
-                  style: TextStyle(color: AppColors.text, decoration: widget.isCompleted ? .lineThrough : .none),
+                  style: TextStyle(color: AppColors.text, decoration: isCompleted ? .lineThrough : .none),
                 ),
               ],
             ),
           ),
+          Column(
+            children: [
+              Checkbox(
+                value: session.isExerciseCompleted(widget.index),
+                onChanged: (value) {
+                  session.setExerciseCompleted(
+                    widget.index,
+                    value ?? false,
+                  );
+                },
+              )
+            ],
+          )
         ],
       )
     );

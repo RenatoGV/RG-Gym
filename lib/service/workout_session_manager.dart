@@ -23,6 +23,8 @@ class WorkoutSessionManager extends ChangeNotifier {
     }
   );
 
+  late List<bool> completedExercises;
+
   DateTime? _workoutStart;
   DateTime? _pauseStart;
 
@@ -124,6 +126,38 @@ class WorkoutSessionManager extends ChangeNotifier {
     );
   }
 
+  bool isExerciseCompleted(int index) => completedExercises[index];
+
+  bool isNextExercise(TrainingExercise exercise) {
+    final nextIndex = completedExercises.indexWhere(
+      (completed) => !completed,
+      exerciseIndex + 1,
+    );
+
+    int targetIndex = nextIndex;
+
+    if (targetIndex == -1) {
+      targetIndex = completedExercises.indexWhere(
+        (completed) => !completed,
+      );
+    }
+
+    if (targetIndex == -1) return false;
+
+    return workout.trainingExercises![targetIndex].id == exercise.id;
+  }
+
+  void setExerciseCompleted(int index, bool value) {
+    completedExercises[index] = value;
+
+    if (index == exerciseIndex && value && phase != WorkoutPhase.finished) {
+      _goToNextPendingExercise();
+      return;
+    }
+
+    notifyListeners();
+  }
+
   void tick() {
     if (isPaused || isFinished) return;
 
@@ -176,6 +210,11 @@ class WorkoutSessionManager extends ChangeNotifier {
   }
 
   void start() {
+    completedExercises = List.generate(
+      workout.trainingExercises!.length,
+      (_) => false
+    );
+
     exerciseIndex = 0;
     setIndex = 0;
 
@@ -289,15 +328,10 @@ class WorkoutSessionManager extends ChangeNotifier {
       _startExercise();
       return;
     }
+    
+    completedExercises[exerciseIndex] = true;
 
-    if(!isLastExercise) {
-      exerciseIndex++;
-      setIndex = 0;
-      _startPreparation();
-      return;
-    }
-
-    finish();
+    _goToNextPendingExercise();
   }
 
   void _previousExecution() {
@@ -326,6 +360,28 @@ class WorkoutSessionManager extends ChangeNotifier {
 
   void _previousRest() {
     _startExercise();
+  }
+
+  void _goToNextPendingExercise() {
+    final next = completedExercises.indexWhere((e) => !e, exerciseIndex + 1);
+
+    if(next != -1) {
+      exerciseIndex = next;
+      setIndex = 0;
+      _startPreparation();
+      return;
+    }
+
+    final previous = completedExercises.indexWhere((e) => !e);
+
+    if(previous != -1) {
+      exerciseIndex = previous;
+      setIndex = 0;
+      _startPreparation();
+      return;
+    }
+
+    finish();
   }
 
   void pause() {

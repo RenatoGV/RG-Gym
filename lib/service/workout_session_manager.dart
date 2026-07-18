@@ -172,6 +172,17 @@ class WorkoutSessionManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addTimeToTimer() {
+    if(phase != .preparation && phase != .rest) return;
+
+    if(phase == .rest && phaseTime == Duration.zero) {
+      _restFinishedNotified = false;
+    }
+
+    phaseTime += const Duration(seconds: 15);
+    notifyListeners();
+  }
+
   void tick() {
     if (isPaused || isFinished) return;
 

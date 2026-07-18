@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:rg_gym/config/data/exercises.dart';
 import 'package:rg_gym/config/data/muscle_groups.dart';
@@ -302,9 +303,10 @@ Widget _counter(WorkoutSessionManager session) {
           width: 48,
           child: session.phase == .preparation || session.phase == .rest ?
             IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.timer_10_select_rounded),
-              color: AppColors.text,
+              onPressed: () => session.addTimeToTimer(),
+              icon: SvgPicture.asset(
+                'assets/icons/15.svg',
+              )
             ) :
             null,
         ),

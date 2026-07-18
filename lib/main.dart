@@ -19,6 +19,7 @@ import 'package:rg_gym/screens/tabs/routines/routine_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/workout_detail.dart';
 import 'package:rg_gym/service/workout_foreground.dart';
 import 'package:rg_gym/service/workout_notification.dart';
+import 'package:rg_gym/service/workout_session_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -189,11 +190,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+@pragma('vm:entry-point')
 class NotificationController {
   @pragma('vm:entry-point')
-  static Future<void> onActionReceivedMethod(
-    ReceivedAction receivedAction,
-  ) async {
+  static Future<void> onActionReceivedMethod(ReceivedAction receivedAction) async {
+    if(receivedAction.buttonKeyPressed == 'ADD_15') {
+      debugPrint('Instance: ${WorkoutSessionManager.instance}');
+      WorkoutSessionManager.instance?.addTimeToTimer();
+      return;
+    }
+
     if (receivedAction.buttonKeyPressed == 'CONTINUE_WORKOUT' ) {
       await WorkoutNotification.cancelRestFinishedNotification();
       return;

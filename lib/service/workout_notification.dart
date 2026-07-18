@@ -42,6 +42,11 @@ class WorkoutNotification {
           label: 'Continuar',
           autoDismissible: true,
         ),
+        NotificationActionButton(
+          key: 'ADD_15',
+          label: '+15 s',
+          actionType: .SilentAction
+        )
       ],
     );
   }

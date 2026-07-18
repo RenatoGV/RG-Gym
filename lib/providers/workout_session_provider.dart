@@ -56,6 +56,9 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
     await WorkoutForeground.stop();
 
     currentSession.removeListener(_onSessionChanged);
+
+    WorkoutSessionManager.clearInstance();
+
     currentSession.dispose();
 
     _session = null;
@@ -84,6 +87,7 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
     WidgetsBinding.instance.removeObserver(this);
 
     _session?.removeListener(_onSessionChanged);
+    WorkoutSessionManager.clearInstance();
     _session?.dispose();
     super.dispose();
   }

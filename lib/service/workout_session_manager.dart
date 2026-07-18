@@ -12,16 +12,21 @@ enum WorkoutPhase {
 }
 
 class WorkoutSessionManager extends ChangeNotifier {
+  static WorkoutSessionManager? _instance;
+
+  static WorkoutSessionManager? get instance => _instance;
+
   final Workout workout;
   final VoidCallback? onFinished;
   final VoidCallback? onRestFinished;
 
-  WorkoutSessionManager(
-    this.workout, {
-      this.onFinished,
-      this.onRestFinished
-    }
-  );
+  WorkoutSessionManager(this.workout, {this.onFinished, this.onRestFinished}) {
+    _instance = this;
+  }
+
+  static void clearInstance() {
+    _instance == null;
+  }
 
   late List<bool> completedExercises;
 
@@ -261,6 +266,8 @@ class WorkoutSessionManager extends ChangeNotifier {
     if(_workoutStart != null) {
       workoutDuration = DateTime.now().difference(_workoutStart!);
     }
+
+    WorkoutSessionManager.clearInstance();
 
     notifyListeners();
   }

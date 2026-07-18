@@ -126,6 +126,20 @@ class WorkoutSessionManager extends ChangeNotifier {
     );
   }
 
+  int get currentExerciseNumber {
+    final completed = completedExercises.where((e) => e).length;
+
+    if(phase == .finished) {
+      return completed;
+    }
+
+    if(!completedExercises[exerciseIndex]) {
+      return completed + 1;
+    }
+
+    return completed;
+  }
+
   bool isExerciseCompleted(int index) => completedExercises[index];
 
   bool isNextExercise(TrainingExercise exercise) {

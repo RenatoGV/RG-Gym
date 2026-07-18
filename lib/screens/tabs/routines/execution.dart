@@ -101,7 +101,7 @@ class _ExecutionState extends State<Execution> {
                   crossAxisAlignment: .start,
                   children: [
                     const SizedBox(height: 20),
-                    Text('Ejercicio ${session.exerciseIndex + 1}/${session.workout.trainingExercises!.length}', style: TextStyle(color: AppColors.primary, fontWeight: .bold)),
+                    Text('Ejercicio ${session.currentExerciseNumber}/${session.workout.trainingExercises!.length}', style: TextStyle(color: AppColors.primary, fontWeight: .bold)),
                     const SizedBox(height: 20),
                     Row(
                       children: [

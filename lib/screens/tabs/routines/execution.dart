@@ -13,6 +13,7 @@ import 'package:rg_gym/screens/tabs/routines/widgets/execution_set_item.dart';
 import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
 import 'package:rg_gym/shared/app_bar.dart';
+import 'package:rg_gym/shared/widgets/pulse_button.dart';
 
 class Execution extends StatefulWidget {
   final Workout workout;
@@ -262,7 +263,7 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('¿Salir del entrenamiento?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
+          title: const AutoSizeText('¿Salir del entrenamiento?', maxLines: 1, style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
           content: const Text('Si sales ahora, el entrenamiento actual se perderá.'),
           actions: [
             TextButton(
@@ -341,7 +342,7 @@ Widget _buttons(WorkoutSessionManager session) {
   bool isStarting = session.phase == .preparation && session.exerciseIndex == 0 && session.setIndex == 0;
 
   return Padding(
-    padding: EdgeInsetsGeometry.symmetric(horizontal: 20),
+    padding: const EdgeInsetsGeometry.symmetric(horizontal: 20),
     child: Row(
       spacing: 30,
       children: [
@@ -351,12 +352,17 @@ Widget _buttons(WorkoutSessionManager session) {
             icon: Icon(Icons.arrow_back_ios_rounded)
           ),
         Expanded(
-          child: FilledButton(
-            onPressed: () => session.next(),
-            child: Text(
-              session.phase == .finished ? 'Terminar' : isStarting ? 'Comenzar' : 'Siguiente',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+          child: PulseButton(
+            color: AppColors.primary,
+            active: session.phaseTime == Duration.zero,
+            child: FilledButton(
+              style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+              onPressed: () => session.next(),
+              child: Text(
+                session.phase == .finished ? 'Terminar' : isStarting ? 'Comenzar' : 'Siguiente',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            )
           )
         ),
       ],

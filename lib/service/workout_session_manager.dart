@@ -19,8 +19,9 @@ class WorkoutSessionManager extends ChangeNotifier {
   final Workout workout;
   final VoidCallback? onFinished;
   final VoidCallback? onRestFinished;
+  final VoidCallback? onCountdownBeep;
 
-  WorkoutSessionManager(this.workout, {this.onFinished, this.onRestFinished}) {
+  WorkoutSessionManager(this.workout, {this.onFinished, this.onRestFinished, this.onCountdownBeep}) {
     _instance = this;
   }
 
@@ -213,8 +214,14 @@ class WorkoutSessionManager extends ChangeNotifier {
 
     phaseTime -= const Duration(seconds: 1);
 
+    final seconds = phaseTime.inSeconds;
+    if((phase == .rest || phase == .preparation) && seconds <= 3 && seconds > 0) {
+      onCountdownBeep?.call();
+    }
+
     if (phaseTime <= Duration.zero) {
       phaseTime = Duration.zero;
+      onCountdownBeep?.call();
 
       if(phase == .rest && !_restFinishedNotified) {
         _restFinishedNotified = true;

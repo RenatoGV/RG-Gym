@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/service/workout_foreground.dart';
@@ -35,10 +36,18 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
     await WorkoutNotification.showRestFinishedNotification();
   }
 
+  Future<void> _playCountdownBeep () async {
+    final player = AudioPlayer();
+
+    await player.play(
+      AssetSource('sounds/countdown.mp3')
+    );
+  }
+
   Future<void> startWorkout(Workout workout) async {
     _session?.dispose();
 
-    _session = WorkoutSessionManager(workout, onFinished: finishWorkout, onRestFinished: _onRestFinished);
+    _session = WorkoutSessionManager(workout, onFinished: finishWorkout, onRestFinished: _onRestFinished, onCountdownBeep: _playCountdownBeep);
     _session!.addListener(_onSessionChanged);
 
     _session!.start();

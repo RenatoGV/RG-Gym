@@ -144,6 +144,12 @@ Future<bool?> showWorkoutDialog(BuildContext context, { required String routineI
                             width: 2,
                           ),
                         ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: AppColors.backgroundSecondary,
+                            width: 2,
+                          )
+                        )
                       ),
                     ),
 
@@ -171,8 +177,6 @@ Future<bool?> showWorkoutDialog(BuildContext context, { required String routineI
                               ),
                               Checkbox(
                                 value: selectedDays.contains(day.key),
-                                checkColor: Colors.white,
-                                activeColor: AppColors.primary,
                                 onChanged: (checked) {
                                   setState(() {
                                     if (checked!) {

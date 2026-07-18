@@ -33,5 +33,23 @@ class AppTheme {
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: AppColors.primary
     ),
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: Colors.white,
+      selectionColor: AppColors.primary,
+      selectionHandleColor: AppColors.primary,
+    ),
+    checkboxTheme: CheckboxThemeData(
+      checkColor: WidgetStatePropertyAll(AppColors.backgroundSecondary),
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary;
+        }
+        return Colors.transparent;
+      }),
+      side: const BorderSide(
+        color: AppColors.backgroundSecondary,
+        width: 2,
+      ),
+    ),
   );
 }

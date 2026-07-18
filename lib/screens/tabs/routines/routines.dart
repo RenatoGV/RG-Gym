@@ -151,6 +151,12 @@ Future<bool?> showRoutineDialog(BuildContext context, { Routine? routine }) {
                         width: 2,
                       ),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppColors.backgroundSecondary,
+                        width: 2,
+                      )
+                    )
                   ),
                 ),
 
@@ -177,6 +183,12 @@ Future<bool?> showRoutineDialog(BuildContext context, { Routine? routine }) {
                         width: 2,
                       ),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppColors.backgroundSecondary,
+                        width: 2,
+                      )
+                    )
                   ),
                 ),
 

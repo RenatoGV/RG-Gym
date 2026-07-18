@@ -9,6 +9,7 @@ import 'package:rg_gym/providers/routines_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/training_set_item.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 import 'package:rg_gym/shared/widgets/fixed_line_formatter.dart';
+import 'package:rg_gym/shared/widgets/fixed_null_formatter.dart';
 
 class ExerciseDetail extends StatefulWidget {
   const ExerciseDetail({super.key});
@@ -435,11 +436,15 @@ Future<Duration?> showRestTimeDialog(BuildContext context, { Duration? initialVa
                   children: [
                     Expanded(
                       child: TextField(
+                        enableInteractiveSelection: false,
                         textAlign: .center,
                         controller: minutesController,
                         cursorColor: AppColors.primary,
                         keyboardType: TextInputType.number,
                         maxLength: 2,
+                        inputFormatters: [
+                          FixedNullFormatter()
+                        ],
                         decoration: const InputDecoration(
                           counterText: '',
                           labelText: '',
@@ -454,6 +459,12 @@ Future<Duration?> showRestTimeDialog(BuildContext context, { Duration? initialVa
                               width: 2,
                             ),
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.backgroundSecondary,
+                              width: 2,
+                            )
+                          )
                         ),
                         style: const TextStyle(
                           fontSize: 70,
@@ -476,11 +487,15 @@ Future<Duration?> showRestTimeDialog(BuildContext context, { Duration? initialVa
 
                     Expanded(
                       child: TextField(
+                        enableInteractiveSelection: false,
                         textAlign: .center,
                         controller: secondsController,
                         cursorColor: AppColors.primary,
                         keyboardType: TextInputType.number,
                         maxLength: 2,
+                        inputFormatters: [
+                          FixedNullFormatter()
+                        ],
                         decoration: const InputDecoration(
                           counterText: '',
                           labelText: '',
@@ -495,6 +510,12 @@ Future<Duration?> showRestTimeDialog(BuildContext context, { Duration? initialVa
                               width: 2,
                             ),
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.backgroundSecondary,
+                              width: 2,
+                            )
+                          )
                         ),
                         style: const TextStyle(
                           fontSize: 70,
@@ -512,8 +533,8 @@ Future<Duration?> showRestTimeDialog(BuildContext context, { Duration? initialVa
                   child: Row(
                     mainAxisAlignment: .spaceBetween,
                     children: [
-                      const Text('Minutos'),
-                      const Text('Segundos'),
+                      const Text('Minutos', style: TextStyle(color: AppColors.text)),
+                      const Text('Segundos', style: TextStyle(color: AppColors.text)),
                     ],
                   ),
                 ),
@@ -593,6 +614,7 @@ Future<String?> showNoteDialog(BuildContext context, { String? note }) {
                 const SizedBox(height: 24),
 
                 TextField(
+                  textCapitalization: .sentences,
                   controller: noteController,
                   cursorColor: AppColors.primary,
                   maxLengthEnforcement: .enforced,
@@ -613,6 +635,12 @@ Future<String?> showNoteDialog(BuildContext context, { String? note }) {
                         width: 2,
                       ),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: AppColors.backgroundSecondary,
+                        width: 2,
+                      )
+                    )
                   ),
                 ),
 

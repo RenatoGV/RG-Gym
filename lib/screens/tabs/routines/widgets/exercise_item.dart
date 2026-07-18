@@ -88,6 +88,7 @@ class ExerciseItem extends StatelessWidget {
                       ),
                       child: Text(
                         maxLines: 1,
+                        overflow: .ellipsis,
                         trainingExercise.note!,
                         style: TextStyle(color: AppColors.primary),
                       ),

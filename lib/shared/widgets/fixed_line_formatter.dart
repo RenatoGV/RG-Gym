@@ -10,26 +10,29 @@ class FixedLineFormatter extends TextInputFormatter {
   });
 
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text.replaceAll('\n', '');
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final rawText = newValue.text.replaceAll('\n', '');
 
     final maxChars = charsPerLine * maxLines;
-
-    if (text.length > maxChars) {
+    if (rawText.length > maxChars) {
       return oldValue;
     }
 
     final buffer = StringBuffer();
+    int newOffset = newValue.selection.baseOffset;
+    int rawIndex = 0;
 
-    for (int i = 0; i < text.length; i++) {
-      if (i > 0 && i % charsPerLine == 0) {
+    while (rawIndex < rawText.length) {
+      if (rawIndex > 0 && rawIndex % charsPerLine == 0) {
         buffer.write('\n');
+
+        if (rawIndex < newValue.selection.baseOffset) {
+          newOffset++;
+        }
       }
 
-      buffer.write(text[i]);
+      buffer.write(rawText[rawIndex]);
+      rawIndex++;
     }
 
     final formatted = buffer.toString();
@@ -37,7 +40,7 @@ class FixedLineFormatter extends TextInputFormatter {
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(
-        offset: formatted.length,
+        offset: newOffset.clamp(0, formatted.length),
       ),
     );
   }

@@ -223,6 +223,8 @@ class _TrainingSetItemState extends State<TrainingSetItem> {
                             SizedBox(
                               width: 40,
                               child: TextField(
+                                key: ValueKey('${widget.type}_reps'),
+                                enableInteractiveSelection: false,
                                 controller: repsController,
                                 cursorColor: Colors.white,
                                 maxLength: 2,
@@ -259,16 +261,18 @@ class _TrainingSetItemState extends State<TrainingSetItem> {
                             SizedBox(
                               width: 55,
                               child: TextField(
+                                key: ValueKey('${widget.type}_weight'),
+                                enableInteractiveSelection: false,
                                 controller: weightController,
                                 cursorColor: Colors.white,
                                 style: const TextStyle(fontSize: 28),
                                 textAlign: TextAlign.center,
                                 keyboardType: TextInputType.number,
-                                inputFormatters: const [
+                                inputFormatters: [
                                   FixedDecimalFormatter(
                                     decimalDigits: 1,
                                     maxIntegerDigits: 2,
-                                  ),
+                                  )
                                 ],
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
@@ -288,6 +292,8 @@ class _TrainingSetItemState extends State<TrainingSetItem> {
                             SizedBox(
                               width: 40,
                               child: TextField(
+                                key: ValueKey('${widget.type}_time'),
+                                enableInteractiveSelection: false,
                                 controller: timeController,
                                 cursorColor: Colors.white,
                                 maxLength: 2,

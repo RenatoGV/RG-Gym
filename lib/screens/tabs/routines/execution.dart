@@ -9,6 +9,7 @@ import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/execution_exercise_item.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/execution_set_item.dart';
+import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 
@@ -24,9 +25,16 @@ class Execution extends StatefulWidget {
   State<Execution> createState() => _ExecutionState();
 }
 
-class _ExecutionState extends State<Execution> {
+class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
   late WorkoutSessionProvider _sessionProvider;
   bool _workoutStarted = false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(state == .resumed) {
+      WorkoutNotification.cancelRestFinishedNotification();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -37,6 +45,8 @@ class _ExecutionState extends State<Execution> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _sessionProvider.startWorkout(widget.workout);
@@ -51,6 +61,7 @@ class _ExecutionState extends State<Execution> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 

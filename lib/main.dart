@@ -196,6 +196,11 @@ class NotificationController {
   ) async {
     if (receivedAction.buttonKeyPressed == 'CONTINUE_WORKOUT' ) {
       await WorkoutNotification.cancelRestFinishedNotification();
+      return;
+    }
+
+    if(receivedAction.buttonKeyPressed.isEmpty) {
+      await WorkoutNotification.cancelRestFinishedNotification();
     }
   }
 }

@@ -42,8 +42,8 @@ class WorkoutForeground {
 
     await FlutterForegroundTask.startService(
       serviceId: serviceId,
-      notificationTitle: 'Entrenamiento activo',
-      notificationText: 'Preparación',
+      notificationTitle: 'Iniciando entrenamiento',
+      notificationText: 'Preparación...',
       callback: startCallback,
     );
   }

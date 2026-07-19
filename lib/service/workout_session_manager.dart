@@ -268,6 +268,8 @@ class WorkoutSessionManager extends ChangeNotifier {
   void finish() {
     isPaused = false;
 
+    phaseTime = Duration.zero;
+
     phase = .finished;
 
     if(_workoutStart != null) {

@@ -46,7 +46,7 @@ class _MuscleHotspotPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final scale = imageWidth / 500;
 
-    final square = 12 * scale;
+    final square = 20 * scale;
     final vertical = 20 * scale;
     final gap = 8 * scale;
 
@@ -69,7 +69,7 @@ class _MuscleHotspotPainter extends CustomPainter {
         text: marker.name,
         style: TextStyle(
           color: Colors.white,
-          fontSize: 16 * scale,
+          fontSize: 20 * scale,
           fontWeight: .w500
         )
       ),

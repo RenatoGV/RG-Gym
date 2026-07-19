@@ -134,6 +134,7 @@ class _ExercisesState extends State<Exercises> {
                         Image.asset(
                           'assets/images/${front ? 'frente_base_cut' : 'tras_base_cut'}.png',
                           fit: BoxFit.fill,
+                          opacity: const AlwaysStoppedAnimation(0.75),
                         ),
 
                         ...markers.map(

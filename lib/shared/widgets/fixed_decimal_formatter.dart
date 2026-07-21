@@ -14,7 +14,6 @@ class FixedDecimalFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    // Solo conservar números
     String digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
     final maxDigits = maxIntegerDigits + decimalDigits;
@@ -23,7 +22,6 @@ class FixedDecimalFormatter extends TextInputFormatter {
       digits = digits.substring(0, maxDigits);
     }
 
-    // Siempre al menos los decimales
     while (digits.length < decimalDigits + 1) {
       digits = '0$digits';
     }

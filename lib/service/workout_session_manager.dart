@@ -20,8 +20,9 @@ class WorkoutSessionManager extends ChangeNotifier {
   final VoidCallback? onFinished;
   final VoidCallback? onRestFinished;
   final VoidCallback? onCountdownBeep;
+  Future<void> Function()? onShowResume;
 
-  WorkoutSessionManager(this.workout, {this.onFinished, this.onRestFinished, this.onCountdownBeep}) {
+  WorkoutSessionManager(this.workout, {this.onFinished, this.onRestFinished, this.onCountdownBeep, this.onShowResume}) {
     _instance = this;
   }
 
@@ -34,9 +35,12 @@ class WorkoutSessionManager extends ChangeNotifier {
   DateTime? _workoutStart;
   DateTime? _pauseStart;
 
-  Duration workoutDuration = Duration.zero;
   Duration phaseTime = Duration.zero;
   Duration preparationTime = const Duration(seconds: 15);
+
+  Duration restDuration = Duration.zero;
+  Duration preparationDuration = Duration.zero;
+  Duration executionDuration = Duration.zero;
 
   int exerciseIndex = 0;
   int setIndex = 0;
@@ -194,11 +198,17 @@ class WorkoutSessionManager extends ChangeNotifier {
 
     switch (phase) {
       case WorkoutPhase.preparation:
+        preparationDuration += Duration(seconds: 1);
+        _decreasePhaseTime();
+        break;
+
       case WorkoutPhase.rest:
+        restDuration += Duration(seconds: 1);
         _decreasePhaseTime();
         break;
 
       case WorkoutPhase.execution:
+        executionDuration += Duration(seconds: 1);
         _updateExecutionTime();
         break;
 
@@ -255,7 +265,9 @@ class WorkoutSessionManager extends ChangeNotifier {
     exerciseIndex = 0;
     setIndex = 0;
 
-    workoutDuration = Duration.zero;
+    preparationDuration = Duration.zero;
+    executionDuration = Duration.zero;
+    restDuration = Duration.zero;
     phaseTime = Duration.zero;
 
     _workoutStart = DateTime.now();
@@ -271,10 +283,6 @@ class WorkoutSessionManager extends ChangeNotifier {
     phaseTime = Duration.zero;
 
     phase = .finished;
-
-    if(_workoutStart != null) {
-      workoutDuration = DateTime.now().difference(_workoutStart!);
-    }
 
     WorkoutSessionManager.clearInstance();
 
@@ -298,14 +306,12 @@ class WorkoutSessionManager extends ChangeNotifier {
         break;
 
       case .finished:
-        Future.microtask(() {
-          onFinished?.call();
+        Future.microtask(() async {
+          await onShowResume?.call();
         });
-        // TODO: Guardar historial
         break;
     }
   }
-
   
   void previous() {
     isPaused = false;

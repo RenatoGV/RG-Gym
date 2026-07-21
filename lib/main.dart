@@ -2,6 +2,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:rg_gym/config/routes/app_router.dart';
 import 'package:rg_gym/config/theme/app_theme.dart';
@@ -23,6 +24,8 @@ import 'package:rg_gym/service/workout_session_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await initializeDateFormatting('es');
 
   FlutterForegroundTask.initCommunicationPort();
   

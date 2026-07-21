@@ -9,6 +9,7 @@ import 'package:rg_gym/models/exercise.dart';
 import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/execution_exercise_item.dart';
+import 'package:rg_gym/screens/tabs/routines/widgets/execution_resume_bottom_sheet.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/execution_set_item.dart';
 import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
@@ -53,7 +54,22 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _sessionProvider.startWorkout(widget.workout);
 
-      if(mounted) {
+      _sessionProvider.session?.onShowResume = () async {
+        if (!mounted) return;
+
+        final result = await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => const ExecutionResumeBottomSheet(),
+        );
+
+        if (result == true) {
+          _sessionProvider.session?.onFinished?.call();
+        }
+      };
+
+      if (mounted) {
         setState(() {
           _workoutStarted = true;
         });
@@ -263,7 +279,7 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const AutoSizeText('¿Salir del entrenamiento?', maxLines: 1, style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
+          title: const Text('¿Salir del entrenamiento?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900)),
           content: const Text('Si sales ahora, el entrenamiento actual se perderá.'),
           actions: [
             TextButton(
@@ -354,7 +370,8 @@ Widget _buttons(WorkoutSessionManager session) {
         Expanded(
           child: PulseButton(
             color: AppColors.primary,
-            active: session.phaseTime == Duration.zero,
+            active: session.phaseTime == Duration.zero &&
+              (session.phase == .preparation || session.phase == .rest || session.phase == .finished || (session.phase == .execution && session.currentExercise.type == .time)),
             child: FilledButton(
               style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
               onPressed: () => session.next(),

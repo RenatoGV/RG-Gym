@@ -51,5 +51,39 @@ class AppTheme {
         width: 2,
       ),
     ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: AppColors.background,
+      headerBackgroundColor: AppColors.primary,
+
+      todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary.withValues(alpha: 0.6);
+        }
+
+        return Colors.transparent;
+      }),
+
+      todayForegroundColor: WidgetStateProperty.all(
+        AppColors.primary,
+      ),
+
+      dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return AppColors.primary.withValues(alpha: 0.6);
+        }
+        return null;
+      }),
+
+      dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.white;
+        }
+        return null;
+      }),
+
+      confirmButtonStyle: TextButton.styleFrom(
+        foregroundColor: AppColors.primary,
+      ),
+    ),
   );
 }

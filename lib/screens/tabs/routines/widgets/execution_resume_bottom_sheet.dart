@@ -7,7 +7,6 @@ import 'package:rg_gym/config/data/muscle_groups.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/helpers/format_helper.dart';
 import 'package:rg_gym/models/history_workout.dart';
-import 'package:rg_gym/models/training_exercise.dart';
 import 'package:rg_gym/providers/history_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/resume_exercise_item.dart';
@@ -21,7 +20,7 @@ class ExecutionResumeBottomSheet extends StatefulWidget {
 }
 
 class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet> {
-  late List<TrainingExercise> selectedExercises;
+  late List<HistoryTrainingExercise> historyExercises;
   bool initialized = false;
 
   @override
@@ -33,15 +32,17 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
     }
 
     if (!initialized) {
-      selectedExercises = [...session.workout.trainingExercises!];
+      historyExercises = session.workout.trainingExercises!.map((e) => HistoryTrainingExercise(trainingExercise: e, completed: true)).toList();
       initialized = true;
     }
 
-    final int countSelectedExercises = selectedExercises.length;
-    final int countSets = selectedExercises.fold(0, (sum, e) => sum + e.sets.length);
-    final int countReps = selectedExercises.fold(0, (sum, e) => sum + e.sets.fold(0, (setSum, s) => setSum + (s.reps ?? 0)));
-    final double totalWeight = selectedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0) * (s.reps ?? 0)));
-    final int totalExercises = session.workout.trainingExercises!.length;
+    final completedExercises = historyExercises.where((e) => e.completed).map((e) => e.trainingExercise).toList();
+
+    final int completedExercisesTotal = completedExercises.length;
+    final int completedSets = completedExercises.fold(0, (sum, e) => sum + e.sets.length);
+    final int completedReps = completedExercises.fold(0, (sum, e) => sum + e.sets.fold(0, (setSum, s) => setSum + (s.reps ?? 0)));
+    final double totalWeight = completedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0) * (s.reps ?? 0)));
+    final int totalExercises = historyExercises.length;
     
     final Map<String, double> muscleFatigue = {};
     void addMuscle(List<int> muscles, double amount) {
@@ -51,8 +52,8 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
         muscleFatigue[muscleName] = ((muscleFatigue[muscleName] ?? 0) + amount).clamp(0.0, 1.0);
       }
     }
-    for(final trainingExercise in selectedExercises) {
-      final exercise = exercises.firstWhere((e) => e.id == trainingExercise.exercise);
+    for(final te in completedExercises) {
+      final exercise = exercises.firstWhere((e) => e.id == te.exercise);
 
       addMuscle(exercise.primaryMuscles, 0.3);
       addMuscle(exercise.secondaryMuscles, 0.1);
@@ -137,24 +138,18 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                           const SizedBox(height: 10),
                           Column(
                             children: List.generate(
-                              session.workout.trainingExercises!.length,
+                              historyExercises.length,
                               (index) {
-                                final exercise = session.workout.trainingExercises![index];
+                                final historyExercise = historyExercises[index];
 
                                 return Padding(
                                   padding: .only(bottom: index == session.workout.trainingExercises!.length - 1 ? 0 : 10),
                                   child: ResumeExerciseItem(
-                                    trainingExercise: exercise,
-                                    selected: selectedExercises.contains(exercise),
+                                    trainingExercise: historyExercise.trainingExercise,
+                                    selected: historyExercise.completed,
                                     onChanged: (selected) {
                                       setState(() {
-                                        if(selected) {
-                                          if(!selectedExercises.contains(exercise)) {
-                                            selectedExercises.add(exercise);
-                                          }
-                                        } else {
-                                          selectedExercises.remove(exercise);
-                                        }
+                                        historyExercise.completed = selected;
                                       });
                                     },
                                   )
@@ -181,7 +176,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                                     const Text('Concluido', style: TextStyle(color: AppColors.text)),
                                     Row(
                                       children: [
-                                        Text('${(countSelectedExercises/totalExercises * 100).round()}', style: TextStyle(fontSize: 15, fontWeight: .w500)),
+                                        Text('${(completedExercisesTotal/totalExercises * 100).round()}', style: TextStyle(fontSize: 15, fontWeight: .w500)),
                                         const Text('%', style: TextStyle(fontSize: 10, fontWeight: .w500)),
                                       ],
                                     ),
@@ -189,7 +184,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                                 ),
                                 const SizedBox(height: 10),
                                 LinearProgressIndicator(
-                                  value: countSelectedExercises / totalExercises,
+                                  value: completedExercisesTotal / totalExercises,
                                   minHeight: 6,
                                   borderRadius: BorderRadius.circular(10),
                                   backgroundColor: AppColors.backgroundSecondary,
@@ -202,15 +197,15 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              _resumeBoxDetail('Ejercicios', '$countSelectedExercises'),
+                              _resumeBoxDetail('Ejercicios', '$completedExercisesTotal'),
                               const SizedBox(width: 5),
-                              _resumeBoxDetail('Series', '$countSets'),
+                              _resumeBoxDetail('Series', '$completedSets'),
                             ],
                           ),
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              _resumeBoxDetail('Repeticiones', '$countReps'),
+                              _resumeBoxDetail('Repeticiones', '$completedReps'),
                               const SizedBox(width: 5),
                               _resumeBoxDetail('Carga', '${FormatHelper.formatDouble(totalWeight)} kg'),
                             ],
@@ -294,7 +289,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
     final HistoryWorkout history = HistoryWorkout(
       id:  const Uuid().v4(),
       name: session.workout.name,
-      trainingExercises: selectedExercises,
+      trainingExercises: historyExercises,
       date: date,
       restDuration: session.restDuration,
       executionDuration: session.executionDuration,

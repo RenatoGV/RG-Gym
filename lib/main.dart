@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rg_gym/config/routes/app_router.dart';
 import 'package:rg_gym/config/theme/app_theme.dart';
 import 'package:rg_gym/models/exercise.dart';
+import 'package:rg_gym/models/history_workout.dart';
 import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/history_provider.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
@@ -19,9 +20,11 @@ import 'package:rg_gym/screens/tabs/routines/execution.dart';
 import 'package:rg_gym/screens/tabs/routines/exercise_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/routine_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/workout_detail.dart';
+import 'package:rg_gym/screens/tabs/stats/screens/history_detail.dart';
 import 'package:rg_gym/service/workout_foreground.dart';
 import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,24 +75,20 @@ class MyApp extends StatelessWidget {
       title: 'RG Gym',
       theme: AppTheme().getTheme(),
       debugShowCheckedModeBanner: false,
-      //ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        //colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      //),
+      
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
+      supportedLocales: const [
+        Locale('es', 'ES'),
+        Locale('en', 'US'),
+      ],
+
+      locale: const Locale('es', 'ES'),
+
       initialRoute: AppRouter.home,
       routes: {
         AppRouter.home: (_) => const HomeScreen(),
@@ -105,6 +104,10 @@ class MyApp extends StatelessWidget {
         AppRouter.execution: (context) {
           final workout = ModalRoute.of(context)!.settings.arguments as Workout;
           return Execution(workout: workout);
+        },
+        AppRouter.historyDetail: (context) {
+          final history = ModalRoute.of(context)!.settings.arguments as HistoryWorkout;
+          return HistoryDetail(historyWorkout: history);
         },
       },
     );

@@ -37,6 +37,27 @@ class HistoryProvider extends ChangeNotifier {
     await save();
   }
 
+  Future<void> modifyDate(String id, DateTime newDate) async {
+    final index = _history.indexWhere((hw) => hw.id == id);
+
+    if(index == -1) throw Exception('History not found');
+    
+    final history = _history[index];
+
+    _history[index] = HistoryWorkout(
+      id: history.id,
+      name: history.name,
+      trainingExercises: history.trainingExercises,
+      date: newDate,
+      restDuration: history.restDuration,
+      preparationDuration: history.preparationDuration,
+      executionDuration: history.executionDuration
+    );
+
+    notifyListeners();
+    await save();
+  }
+
   Future<void> remove(String id) async {
     _history.removeWhere((hw) => hw.id == id);
     notifyListeners();

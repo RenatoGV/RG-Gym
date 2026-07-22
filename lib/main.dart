@@ -8,6 +8,7 @@ import 'package:rg_gym/config/routes/app_router.dart';
 import 'package:rg_gym/config/theme/app_theme.dart';
 import 'package:rg_gym/models/exercise.dart';
 import 'package:rg_gym/models/workout.dart';
+import 'package:rg_gym/providers/history_provider.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/home.dart';
@@ -51,6 +52,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           create: (_) => WorkoutSessionProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => HistoryProvider()..load(),
         )
       ],
       child: const MyApp()

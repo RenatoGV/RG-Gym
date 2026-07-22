@@ -19,7 +19,7 @@ class Workout {
       'id': id,
       'name': name,
       'trainingExercises': trainingExercises?.map((t) => t.toJson()).toList(),
-      'days': days // TODO: Probable problema
+      'days': days
     };
   }
 

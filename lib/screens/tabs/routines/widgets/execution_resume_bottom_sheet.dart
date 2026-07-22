@@ -6,9 +6,12 @@ import 'package:rg_gym/config/data/exercises.dart';
 import 'package:rg_gym/config/data/muscle_groups.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/helpers/format_helper.dart';
+import 'package:rg_gym/models/history_workout.dart';
 import 'package:rg_gym/models/training_exercise.dart';
+import 'package:rg_gym/providers/history_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/resume_exercise_item.dart';
+import 'package:uuid/uuid.dart';
 
 class ExecutionResumeBottomSheet extends StatefulWidget {
   const ExecutionResumeBottomSheet({super.key});
@@ -264,6 +267,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                             height: 50,
                             child: FilledButton(
                               onPressed: () => {
+                                saveHistory(today),
                                 Navigator.of(context).pop(true)
                               },
                               child: const Text("Finalizar entrenamiento"),
@@ -281,7 +285,26 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
       },
     );
   }
+
+  Future<void> saveHistory(DateTime date) async {
+    final session = context.read<WorkoutSessionProvider>().session;
+
+    if (session == null) return;
+
+    final HistoryWorkout history = HistoryWorkout(
+      id:  const Uuid().v4(),
+      name: session.workout.name,
+      trainingExercises: selectedExercises,
+      date: date,
+      restDuration: session.restDuration,
+      executionDuration: session.executionDuration,
+      preparationDuration: session.preparationDuration,
+    );
+
+    await context.read<HistoryProvider>().add(history);
+  }
 }
+
 
 Widget _resumeBoxDetail(String title, String amount) {
   return Expanded(
@@ -449,7 +472,7 @@ String durationString(Duration duration) {
   final parts = <String>[];
 
   if(hours > 0) parts.add('$hours h');
-  if(minutes > 0) parts.add('$minutes h');
+  if(minutes > 0) parts.add('$minutes m');
   if(seconds > 0 || parts.isEmpty) parts.add('$seconds s');
 
   return parts.join(' ');

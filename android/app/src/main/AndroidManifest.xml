@@ -5,13 +5,12 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
-        android:label="rg_gym"
+        android:label="RG Gym"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:foregroundServiceType="dataSync"
-            android:stopWithTask="true"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

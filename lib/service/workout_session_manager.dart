@@ -26,8 +26,56 @@ class WorkoutSessionManager extends ChangeNotifier {
     _instance = this;
   }
 
+  factory WorkoutSessionManager.fromJson(
+    Map<String, dynamic> json, {
+      VoidCallback? onFinished,
+      VoidCallback? onRestFinished,
+      VoidCallback? onCountdownBeep,
+      Future<void> Function()? onShowResume,
+    }
+  ) {
+    final manager = WorkoutSessionManager(
+      Workout.fromJson(json['workout']),
+      onFinished: onFinished,
+      onRestFinished: onRestFinished,
+      onCountdownBeep: onCountdownBeep,
+      onShowResume: onShowResume,
+    );
+
+    manager.completedExercises = (json['completedExercises'] as List)
+      .map((e) => e as bool)
+      .toList();
+    manager.exerciseIndex = json['exerciseIndex'];
+    manager.setIndex = json['setIndex'];
+    manager.phase = WorkoutPhase.values.byName(json['phase']);
+    manager.phaseTime = Duration(seconds: json['phaseTime']);
+    manager.preparationDuration = Duration(seconds: json['preparationDuration']);
+    manager.executionDuration = Duration(seconds: json['executionDuration']);
+    manager.restDuration = Duration(seconds: json['restDuration']);
+    manager.isPaused = json['isPaused'] ?? false;
+    manager._restFinishedNotified = json['restFinishedNotified'] ?? false;
+
+    return manager;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'workout': workout.toJson(),
+      'completedExercises': completedExercises,
+      'exerciseIndex': exerciseIndex,
+      'setIndex': setIndex,
+      'phase': phase.name,
+      'phaseTime': phaseTime.inSeconds,
+      'preparationDuration': preparationDuration.inSeconds,
+      'executionDuration': executionDuration.inSeconds,
+      'restDuration': restDuration.inSeconds,
+      'isPaused': isPaused,
+      'restFinishedNotified': _restFinishedNotified,
+    };
+  }
+
   static void clearInstance() {
-    _instance == null;
+    _instance = null;
   }
 
   late List<bool> completedExercises;

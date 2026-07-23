@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/service/workout_foreground.dart';
 import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
+import 'package:rg_gym/service/workout_session_storage.dart';
 
 class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver {
   WorkoutSessionManager? _session;
@@ -14,14 +17,61 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
 
   bool _isAppInBackground = false;
 
+  DateTime? _lastPersist;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _isAppInBackground = state == AppLifecycleState.paused || state == AppLifecycleState.inactive;
+
+    if(state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      unawaited(_persist(force: true));
+    }
   }
 
   WorkoutSessionProvider() {
     WidgetsBinding.instance.addObserver(this);
     WorkoutForeground.listenToEvents(_onForegroundEvent);
+  }
+
+  Future<void> restoreSession() async {
+    if (_session != null) return;
+
+    final runtimeInstance = WorkoutSessionManager.instance;
+
+    if(runtimeInstance != null) {
+      _attachSession(runtimeInstance);
+      return;
+    }
+
+    final json = await WorkoutSessionStorage.get();
+    if(json == null) return;
+
+    try {
+      final restored = WorkoutSessionManager.fromJson(
+        json,
+        onFinished: finishWorkout,
+        onRestFinished: _onRestFinished,
+        onCountdownBeep: _playCountdownBeep
+      );
+
+      if(restored.isFinished) {
+        await WorkoutSessionStorage.clear();
+        WorkoutSessionManager.clearInstance();
+        return;
+      }
+
+      _attachSession(restored);
+
+      await WorkoutForeground.start();
+    } catch (_) {
+      await WorkoutSessionStorage.clear();
+      WorkoutSessionManager.clearInstance();
+    }
+  }
+
+  void _attachSession(WorkoutSessionManager manager) {
+    _session = manager;
+    _session!.addListener(_onSessionChanged);
   }
 
   void _onForegroundEvent(Object data) {
@@ -47,14 +97,17 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
   Future<void> startWorkout(Workout workout) async {
     _session?.dispose();
 
-    _session = WorkoutSessionManager(workout, onFinished: finishWorkout, onRestFinished: _onRestFinished, onCountdownBeep: _playCountdownBeep);
-    _session!.addListener(_onSessionChanged);
+    final manager = WorkoutSessionManager(workout, onFinished: finishWorkout, onRestFinished: _onRestFinished, onCountdownBeep: _playCountdownBeep);
 
-    _session!.start();
+    _attachSession(manager);
+    
+    manager.start();
 
     notifyListeners();
 
     await WorkoutForeground.start();
+
+    await _persist(force: true);
   }
 
   Future<void> finishWorkout() async {
@@ -72,6 +125,8 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
 
     _session = null;
 
+    await WorkoutSessionStorage.clear();
+
     notifyListeners();
   }
 
@@ -88,7 +143,25 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
       text: text
     );
 
+    unawaited(_persist());
+
     notifyListeners();
+  }
+
+  Future<void> _persist({bool force = false}) async {
+    final currentSession = _session;
+
+    if(currentSession == null) return;
+
+    final now = DateTime.now();
+
+    if(!force && _lastPersist != null && now.difference(_lastPersist!) < const Duration(seconds: 3)) {
+      return;
+    }
+
+    _lastPersist = now;
+
+    await WorkoutSessionStorage.save(currentSession.toJson());
   }
 
   @override

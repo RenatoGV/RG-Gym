@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rg_gym/config/menu/menu_items.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
+import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/exercises/exercises.dart';
 import 'package:rg_gym/screens/tabs/routines/routines.dart';
 import 'package:rg_gym/screens/tabs/stats/stats.dart';
@@ -13,6 +15,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final session = context.read<WorkoutSessionProvider>();
+
+      if (session.hasSession) {
+        Navigator.pushNamed(context, '/execution');
+      }
+    });
+  }
+
   int currentIndex = 0;
 
   final pages = const [

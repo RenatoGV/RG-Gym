@@ -6,7 +6,6 @@ import 'package:rg_gym/config/data/exercises.dart';
 import 'package:rg_gym/config/data/muscle_groups.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/models/exercise.dart';
-import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/execution_exercise_item.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/execution_resume_bottom_sheet.dart';
@@ -17,12 +16,7 @@ import 'package:rg_gym/shared/app_bar.dart';
 import 'package:rg_gym/shared/widgets/pulse_button.dart';
 
 class Execution extends StatefulWidget {
-  final Workout workout;
-
-  const Execution({
-    super.key,
-    required this.workout
-  });
+  const Execution({super.key});
 
   @override
   State<Execution> createState() => _ExecutionState();
@@ -30,7 +24,6 @@ class Execution extends StatefulWidget {
 
 class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
   late WorkoutSessionProvider _sessionProvider;
-  bool _workoutStarted = false;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -52,8 +45,6 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _sessionProvider.startWorkout(widget.workout);
-
       _sessionProvider.session?.onShowResume = () async {
         if (!mounted) return;
 
@@ -68,12 +59,6 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
           _sessionProvider.session?.onFinished?.call();
         }
       };
-
-      if (mounted) {
-        setState(() {
-          _workoutStarted = true;
-        });
-      }
     });
   }
 
@@ -87,15 +72,6 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final session = context.watch<WorkoutSessionProvider>().session;
 
-    if (!_workoutStarted) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     if (session == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -103,7 +79,12 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
         }
       });
 
-      return const SizedBox.shrink();
+      return const Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     final Exercise currentExercise = exercises.firstWhere((e) => e.id == session.currentExercise.exercise);
@@ -118,7 +99,7 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: CustomAppBar(
-          title: widget.workout.name,
+          title: session.workout.name,
           onBack: _confirmExit
         ),
         body: SafeArea(

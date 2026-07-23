@@ -8,7 +8,6 @@ import 'package:rg_gym/config/routes/app_router.dart';
 import 'package:rg_gym/config/theme/app_theme.dart';
 import 'package:rg_gym/models/exercise.dart';
 import 'package:rg_gym/models/history_workout.dart';
-import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/history_provider.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
@@ -47,14 +46,17 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  final workoutSessionProvider = WorkoutSessionProvider();
+  await workoutSessionProvider.restoreSession();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
           create: (_) => RoutinesProvider()..load(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => WorkoutSessionProvider(),
+        ChangeNotifierProvider.value(
+          value: workoutSessionProvider,
         ),
         ChangeNotifierProvider(
           create: (_) => HistoryProvider()..load(),
@@ -101,10 +103,7 @@ class MyApp extends StatelessWidget {
           final exercise = ModalRoute.of(context)!.settings.arguments as Exercise;
           return ExerciseInfo(exercise: exercise);
         },
-        AppRouter.execution: (context) {
-          final workout = ModalRoute.of(context)!.settings.arguments as Workout;
-          return Execution(workout: workout);
-        },
+        AppRouter.execution: (_) => const Execution(),
         AppRouter.historyDetail: (context) {
           final history = ModalRoute.of(context)!.settings.arguments as HistoryWorkout;
           return HistoryDetail(historyWorkout: history);

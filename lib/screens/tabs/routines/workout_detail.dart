@@ -10,6 +10,7 @@ import 'package:rg_gym/helpers/format_helper.dart';
 import 'package:rg_gym/models/muscle_group.dart';
 import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
+import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/exercise_item.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 
@@ -47,15 +48,14 @@ class WorkoutDetail extends StatelessWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () => {
-                      if(workout.trainingExercises != null && workout.trainingExercises!.isNotEmpty) {
-                        Navigator.pushNamed(
-                          context,
-                          '/execution',
-                          arguments: workout,
-                        ),
-                      }
+                    onPressed: () async {
+                      if(workout.trainingExercises == null || workout.trainingExercises!.isEmpty) return;
 
+                      await context.read<WorkoutSessionProvider>().startWorkout(workout);
+                      
+                      if(context.mounted) {
+                        await Navigator.pushNamed(context, '/execution');
+                      }
                     },
                     child: const Text(
                       'Iniciar entrenamiento',

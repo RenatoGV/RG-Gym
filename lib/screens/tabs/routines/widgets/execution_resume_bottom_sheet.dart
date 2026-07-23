@@ -126,8 +126,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                             child: Row(
                               mainAxisAlignment: .spaceBetween,
                               children: [
-                                Text(todayFormatted, style: TextStyle(color: AppColors.text)),
-                                const Icon(Icons.lock, color: AppColors.primary)
+                                Text(todayFormatted, style: TextStyle(color: AppColors.text))
                               ],
                             ),
                           ),
@@ -261,9 +260,11 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                           child: SizedBox(
                             height: 50,
                             child: FilledButton(
-                              onPressed: () => {
-                                saveHistory(today),
-                                Navigator.of(context).pop(true)
+                              onPressed: () async {
+                                final navigator = Navigator.of(context);
+
+                                await saveHistory(today);
+                                navigator.pop(true);
                               },
                               child: const Text("Finalizar entrenamiento"),
                             ),

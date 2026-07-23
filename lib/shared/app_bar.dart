@@ -25,9 +25,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canGoBack = Navigator.canPop(context);
+    final route = ModalRoute.of(context);
+    final canGoBack = route?.canPop ?? false;
 
     return AppBar(
+      automaticallyImplyLeading: false,
+
       leading: (canGoBack || onBack != null) ?
         IconButton(
           onPressed: onBack ?? () => Navigator.of(context).pop(),

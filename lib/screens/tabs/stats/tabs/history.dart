@@ -108,7 +108,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   padding: const EdgeInsets.all(10),
                   itemCount: selectedHistory.length,
                   itemBuilder: (context, index) {
-                    return HistoryItem(historyWorkout: selectedHistory[index]);
+                    return Column(
+                      children: [
+                        HistoryItem(
+                          historyWorkout: selectedHistory[index],
+                        ),
+
+                        if (index != selectedHistory.length - 1)
+                          const Divider(color: AppColors.backgroundSecondary, thickness: 3, radius: BorderRadius.all(Radius.circular(2)),),
+                      ],
+                    );
                   },
                 ),
               ),

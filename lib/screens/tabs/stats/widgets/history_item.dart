@@ -15,54 +15,55 @@ class HistoryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final historyMonth = DateFormat('MMM', 'es_ES').format(historyWorkout.date);
 
-    return Row(
-      crossAxisAlignment: .center,
-      children: [
-        Padding(
-          padding: .symmetric(horizontal: 10),
-          child: Column(
-            children: [
-              Text(historyWorkout.date.day.toString(), style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: .bold)),
-              Text(historyMonth, style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: .bold)),
-            ],
-          ),
+    return GestureDetector(
+      behavior: .opaque,
+      onTap: () => Navigator.pushNamed(
+          context,
+          '/history',
+          arguments: historyWorkout,
         ),
-
-        const SizedBox(width: 8),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: .start,
-            children: [
-              Text(
-                historyWorkout.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                historyWorkout.musclesWorkedString,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppColors.text
-                ),
-              ),
-            ],
+      child: Row(
+        crossAxisAlignment: .center,
+        children: [
+          Padding(
+            padding: .symmetric(horizontal: 10),
+            child: Column(
+              children: [
+                Text(historyWorkout.date.day.toString(), style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: .bold)),
+                Text(historyMonth, style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: .bold)),
+              ],
+            ),
           ),
-        ),
-        IconButton(
-          onPressed: () => Navigator.pushNamed(
-            context,
-            '/history',
-            arguments: historyWorkout,
+
+          const SizedBox(width: 8),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: .start,
+              children: [
+                Text(
+                  historyWorkout.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  historyWorkout.musclesWorkedString,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.text
+                  ),
+                ),
+              ],
+            ),
           ),
-          icon: Icon(Icons.navigate_next_rounded, color: AppColors.text),
-        )
-      ],
+          Icon(Icons.navigate_next_rounded, color: AppColors.text)
+        ],
+      )
     );
   }
 }

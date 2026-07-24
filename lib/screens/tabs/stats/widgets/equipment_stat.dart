@@ -65,18 +65,27 @@ class _EquipmentStatState extends State<EquipmentStat>
                 PieChartData(
                   sectionsSpace: 0,
                   centerSpaceRadius: 0,
-                  sections: entries.map((entry) {
-                    final percent = total == 0
-                        ? 0.0
-                        : entry.value / total * 100;
+                  sections: total == 0
+                    ? [
+                        PieChartSectionData(
+                          value: 100,
+                          color: AppColors.backgroundSecondary,
+                          title: '',
+                          radius: 90
+                        )
+                      ]
+                    : entries.map((entry) {
+                        final percent = total == 0
+                            ? 0.0
+                            : entry.value / total * 100;
 
-                    return PieChartSectionData(
-                      value: percent,
-                      color: equipmentColors[entry.key],
-                      title: '${percent.toStringAsFixed(1)}%',
-                      radius: 90,
-                    );
-                  }).toList(),
+                        return PieChartSectionData(
+                          value: percent,
+                          color: equipmentColors[entry.key],
+                          title: '${percent.toStringAsFixed(1)}%',
+                          radius: 90,
+                        );
+                      }).toList(),
                 ),
               ),
             ),
@@ -90,6 +99,8 @@ class _EquipmentStatState extends State<EquipmentStat>
             alignment: Alignment.topCenter,
             child: Column(
               children: [
+                if(total == 0) const Text('Sin datos', style: TextStyle(color: AppColors.text))
+                else
                 ...visibleEntries.map((entry) {
                   final equipment = equipments.firstWhere(
                     (e) => e.id == entry.key,

@@ -12,6 +12,7 @@ import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/exercise_item.dart';
+import 'package:rg_gym/service/battery_optimization.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 
 class WorkoutDetail extends StatelessWidget {
@@ -51,11 +52,25 @@ class WorkoutDetail extends StatelessWidget {
                     onPressed: () async {
                       if(workout.trainingExercises == null || workout.trainingExercises!.isEmpty) return;
 
-                      await context.read<WorkoutSessionProvider>().startWorkout(workout);
-                      
-                      if(context.mounted) {
-                        await Navigator.pushNamed(context, '/execution');
+                      final provider = context.read<WorkoutSessionProvider>();
+
+                      final batteryEnabled = await BatteryOptimization.isDisabled();
+
+                      if(!context.mounted) return;
+
+                      if(!batteryEnabled) {
+                        final configure = await showBatteryDialog(context);
+
+                        if(!configure) return;
+
+                        if(!context.mounted) return;
                       }
+
+                      await provider.startWorkout(workout);
+
+                      if(!context.mounted) return;
+                      
+                      await Navigator.pushNamed(context, '/execution');
                     },
                     child: const Text(
                       'Iniciar entrenamiento',
@@ -400,4 +415,44 @@ Set<MuscleGroup> getMusclesWorked(Workout workout) {
   }
 
   return muscles;
+}
+
+Future<bool> showBatteryDialog(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Optimización de batería', style: TextStyle(color: AppColors.primary, fontWeight: .bold)),
+        content: const Text(
+          'Para evitar que Android detenga el entrenamiento en segundo plano '
+          'cuando la pantalla esté apagada, se recomienda desactivar la '
+          'optimización de batería para RG Gym.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, true);
+            },
+            child: const Text('Omitir'),
+          ),
+
+          FilledButton(
+            style: FilledButton.styleFrom(
+              padding: .symmetric(horizontal: 10)
+            ),
+            onPressed: () async {
+              await BatteryOptimization.openSettings();
+
+              if(context.mounted) {
+                Navigator.pop(context, true);
+              }
+            },
+            child: const Text('Configurar'),
+          ),
+        ],
+      );
+    }
+  );
+
+  return result ?? false;
 }

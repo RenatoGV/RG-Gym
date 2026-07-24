@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:rg_gym/models/workout.dart';
 import 'package:rg_gym/service/workout_foreground.dart';
 import 'package:rg_gym/service/workout_notification.dart';
@@ -104,6 +105,8 @@ class WorkoutSessionProvider extends ChangeNotifier with WidgetsBindingObserver 
     manager.start();
 
     notifyListeners();
+
+    await Permission.ignoreBatteryOptimizations.request();
 
     await WorkoutForeground.start();
 

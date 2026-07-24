@@ -48,8 +48,41 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(getMuscles(primaryMuscles, 'primario'), style: TextStyle(color: AppColors.text)),
-            Text(getMuscles(secondaryMuscles, 'secundario'), style: TextStyle(color: AppColors.text)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Músculo${primaryMuscles.length > 1 ? 's' : ''} primario${primaryMuscles.length > 1 ? 's' : ''}: ',
+                          style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(text: primaryMuscles.map((m) => m.name).join(', '), style: TextStyle(color: AppColors.text)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if(secondaryMuscles.isNotEmpty)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Músculo${secondaryMuscles.length > 1 ? 's' : ''} secundario${secondaryMuscles.length > 1 ? 's' : ''}: ',
+                            style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(text: secondaryMuscles.map((m) => m.name).join(', '), style: TextStyle(color: AppColors.text)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(height: 20),
             Stack(
               children: [
@@ -151,18 +184,28 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
   }
 }
 
-String getMuscles(List<MuscleGroup> muscleGroups, String type) {
-  return 'Músculo${muscleGroups.length > 1 ? 's' : ''} $type${muscleGroups.length > 1 ? 's' : ''}: ${muscleGroups.map((m) => m.name).join(', ')}';
-}
-
 class StatisticsTab extends StatelessWidget {
   const StatisticsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text(
-        'Aquí van las estadísticas'
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 50),
+          Icon(
+            Icons.bar_chart_sharp,
+            color: AppColors.text,
+            size: 40,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Sin datos para el gráfico',
+            style: TextStyle(color: AppColors.text),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -185,54 +228,69 @@ class InstructionsTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: .start,
       children: [
-        const Text(
-          "Preparación",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Text(exercise.preparation, style: TextStyle(color: AppColors.text)),
-
-        const SizedBox(height: 20),
-
-        const Text(
-          "Ejecución",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(
-            exercise.execution.length,
-            (index) => Padding(
-              padding: .only(bottom: 5),
-              child: Text(
-                '${index + 1}- ${exercise.execution[index]}',
-                style: const TextStyle(color: AppColors.text),
+        if(exercise.preparation.isNotEmpty)
+          Column(
+            children: [
+              const Text(
+                "Preparación",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
-          ),
-        ),
+              const SizedBox(height: 5),
+              Text(exercise.preparation, style: TextStyle(color: AppColors.text)),
 
-        const SizedBox(height: 20),
-
-        const Text(
-          "Detalles",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(
-            exercise.details.length,
-            (index) => Padding(
-              padding: .only(bottom: 5),
-              child: Text(
-                '• ${exercise.details[index]}',
-                style: const TextStyle(color: AppColors.text),
-              )
-            ),
+              const SizedBox(height: 20),
+            ],
           ),
-        ),
+
+        if(exercise.execution.isNotEmpty)
+          Column(
+            children: [
+              const Text(
+                "Ejecución",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 5),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(
+                  exercise.execution.length,
+                  (index) => Padding(
+                    padding: .only(bottom: 5),
+                    child: Text(
+                      '${index + 1}- ${exercise.execution[index]}',
+                      style: const TextStyle(color: AppColors.text),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
+          ),
+
+        if(exercise.details.isNotEmpty)
+          Column(
+            children: [
+              const Text(
+                "Detalles",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 5),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(
+                  exercise.details.length,
+                  (index) => Padding(
+                    padding: .only(bottom: 5),
+                    child: Text(
+                      '• ${exercise.details[index]}',
+                      style: const TextStyle(color: AppColors.text),
+                    )
+                  ),
+                ),
+              ),
+            ],
+          ),
 
         const SizedBox(height: 10),
         const Divider(color: AppColors.backgroundSecondary),
@@ -293,7 +351,7 @@ class InstructionsTab extends StatelessWidget {
                     ),
 
                     ...primaryMuscles
-                      .where((m) => m.type == .back)
+                      .where((m) => m.type == .back || m.type == .both)
                       .map(
                         (m) => Image.asset(
                           'assets/images/muscles/tras_gm${m.id}.png',
@@ -303,7 +361,7 @@ class InstructionsTab extends StatelessWidget {
                       ),
 
                     ...secondaryMuscles
-                      .where((m) => m.type == .back)
+                      .where((m) => m.type == .back || m.type == .both)
                       .map(
                         (m) => Image.asset(
                           'assets/images/muscles/tras_gm${m.id}.png',
@@ -329,34 +387,54 @@ class InstructionsTab extends StatelessWidget {
                 borderRadius: BorderRadius.circular(100)
               ),
             ),
-            Text('Músculo${primaryMuscles.length > 1 ? 's' : ''} primario${primaryMuscles.length > 1 ? 's' : ''}:', style: TextStyle(fontWeight: .bold)),
             Expanded(
-              child: Text(
-                primaryMuscles.map((m) => m.name).join(', '),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Músculo${primaryMuscles.length > 1 ? 's' : ''} primario${primaryMuscles.length > 1 ? 's' : ''}: ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(text: primaryMuscles.map((m) => m.name).join(', ')),
+                  ],
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        Row(
-          spacing: 3,
-          children: [
-            Container(
-              height: 7,
-              width: 7,
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(100)
+        if(secondaryMuscles.isNotEmpty)
+          Column(
+            crossAxisAlignment: .start,
+            children: [
+              const SizedBox(height: 10),
+              Row(
+                spacing: 3,
+                children: [
+                  Container(
+                    height: 7,
+                    width: 7,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(100)
+                    ),
+                  ),
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Músculo${secondaryMuscles.length > 1 ? 's' : ''} secundario${secondaryMuscles.length > 1 ? 's' : ''}: ',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(text: secondaryMuscles.map((m) => m.name).join(', ')),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
               ),
-            ),
-            Text('Músculo${secondaryMuscles.length > 1 ? 's' : ''} segundario${secondaryMuscles.length > 1 ? 's' : ''}:', style: TextStyle(fontWeight: .bold)),
-            Expanded(
-              child: Text(
-                secondaryMuscles.map((m) => m.name).join(', '),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
         const SizedBox(height: 30),
       ],
     );
@@ -369,9 +447,22 @@ class HistoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text(
-        "Historial de entrenamientos",
-        style: TextStyle(color: Colors.white),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 50),
+          Icon(
+            Icons.history,
+            color: AppColors.text,
+            size: 40,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'No hay historial',
+            style: TextStyle(color: AppColors.text),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

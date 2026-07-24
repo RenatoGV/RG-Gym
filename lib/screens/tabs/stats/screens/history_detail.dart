@@ -224,7 +224,7 @@ class HistoryDetail extends StatelessWidget {
                                       ),
 
                                       ...historyWorkout.musclesWorked
-                                        .where((m) => m.type == .front)
+                                        .where((m) => m.type == .front || m.type == .both)
                                         .map(
                                           (m) => Image.asset(
                                             'assets/images/muscles/frente_gm${m.id}.png',
@@ -248,7 +248,7 @@ class HistoryDetail extends StatelessWidget {
                                       ),
 
                                       ...historyWorkout.musclesWorked
-                                        .where((m) => m.type == .back)
+                                        .where((m) => m.type == .back || m.type == .both)
                                         .map(
                                           (m) => Image.asset(
                                             'assets/images/muscles/tras_gm${m.id}.png',

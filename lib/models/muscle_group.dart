@@ -14,4 +14,5 @@ class MuscleGroup {
 enum MuscleType {
   front,
   back,
+  both
 }

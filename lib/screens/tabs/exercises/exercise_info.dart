@@ -259,7 +259,7 @@ class InstructionsTab extends StatelessWidget {
                     ),
 
                     ...primaryMuscles
-                      .where((m) => m.type == .front)
+                      .where((m) => m.type == .front || m.type == .both)
                       .map(
                         (m) => Image.asset(
                           'assets/images/muscles/frente_gm${m.id}.png',
@@ -269,7 +269,7 @@ class InstructionsTab extends StatelessWidget {
                       ),
 
                     ...secondaryMuscles
-                      .where((m) => m.type == .front)
+                      .where((m) => m.type == .front || m.type == .both)
                       .map(
                         (m) => Image.asset(
                           'assets/images/muscles/frente_gm${m.id}.png',

@@ -261,10 +261,9 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                             height: 50,
                             child: FilledButton(
                               onPressed: () async {
-                                final navigator = Navigator.of(context);
-
                                 await saveHistory(today);
-                                navigator.pop(true);
+
+                                if(context.mounted) Navigator.of(context).pop(true);
                               },
                               child: const Text("Finalizar entrenamiento"),
                             ),

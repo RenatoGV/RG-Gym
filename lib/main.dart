@@ -46,20 +46,26 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  final routinesProvider = RoutinesProvider();
+  await routinesProvider.load();
+
+  final historyProvider = HistoryProvider();
+  await historyProvider.load();
+
   final workoutSessionProvider = WorkoutSessionProvider();
   await workoutSessionProvider.restoreSession();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => RoutinesProvider()..load(),
+        ChangeNotifierProvider.value(
+          value: routinesProvider,
         ),
         ChangeNotifierProvider.value(
           value: workoutSessionProvider,
         ),
-        ChangeNotifierProvider(
-          create: (_) => HistoryProvider()..load(),
+        ChangeNotifierProvider.value(
+          value: historyProvider,
         )
       ],
       child: const MyApp()

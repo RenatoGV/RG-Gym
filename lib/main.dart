@@ -9,6 +9,7 @@ import 'package:rg_gym/config/theme/app_theme.dart';
 import 'package:rg_gym/models/exercise.dart';
 import 'package:rg_gym/models/history_workout.dart';
 import 'package:rg_gym/providers/history_provider.dart';
+import 'package:rg_gym/providers/muscle_fatigue_provider.dart';
 import 'package:rg_gym/providers/routines_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/home.dart';
@@ -20,6 +21,8 @@ import 'package:rg_gym/screens/tabs/routines/exercise_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/routine_detail.dart';
 import 'package:rg_gym/screens/tabs/routines/workout_detail.dart';
 import 'package:rg_gym/screens/tabs/stats/screens/history_detail.dart';
+import 'package:rg_gym/screens/tabs/stats/screens/muscle_fatigue.dart';
+import 'package:rg_gym/service/muscle_fatigue_storage.dart';
 import 'package:rg_gym/service/workout_foreground.dart';
 import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
@@ -27,6 +30,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await MuscleFatigueStorage.initialize();
 
   await initializeDateFormatting('es');
 
@@ -55,6 +60,9 @@ Future<void> main() async {
   final workoutSessionProvider = WorkoutSessionProvider();
   await workoutSessionProvider.restoreSession();
 
+  final muscleFatigueProvider = MuscleFatigueProvider();
+  await muscleFatigueProvider.load();
+
   runApp(
     MultiProvider(
       providers: [
@@ -66,6 +74,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider.value(
           value: historyProvider,
+        ),
+        ChangeNotifierProvider.value(
+          value: muscleFatigueProvider,
         )
       ],
       child: const MyApp()
@@ -114,6 +125,7 @@ class MyApp extends StatelessWidget {
           final history = ModalRoute.of(context)!.settings.arguments as HistoryWorkout;
           return HistoryDetail(historyWorkout: history);
         },
+        AppRouter.fatigueDetail: (_) => const MuscleFatigueScreen(),
       },
     );
   }

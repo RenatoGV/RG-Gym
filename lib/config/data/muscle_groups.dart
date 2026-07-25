@@ -10,7 +10,7 @@ const muscleGroups = <MuscleGroup> [
   MuscleGroup(id: 6, name: 'Cuadriceps', type: .front),
   MuscleGroup(id: 7, name: 'Aductores', type: .both),
   MuscleGroup(id: 8, name: 'Abductores', type: .front),
-  MuscleGroup(id: 9, name: 'Trapecio', type: .both),
+  MuscleGroup(id: 9, name: 'Trapecio', type: .back),
   MuscleGroup(id: 10, name: 'Tríceps', type: .both),
   MuscleGroup(id: 11, name: 'Dorsales', type: .both),
   MuscleGroup(id: 12, name: 'Lumbares', type: .back),

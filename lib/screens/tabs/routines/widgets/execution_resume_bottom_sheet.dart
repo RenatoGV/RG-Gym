@@ -8,6 +8,7 @@ import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/helpers/format_helper.dart';
 import 'package:rg_gym/models/history_workout.dart';
 import 'package:rg_gym/providers/history_provider.dart';
+import 'package:rg_gym/providers/muscle_fatigue_provider.dart';
 import 'package:rg_gym/providers/workout_session_provider.dart';
 import 'package:rg_gym/screens/tabs/routines/widgets/resume_exercise_item.dart';
 import 'package:uuid/uuid.dart';
@@ -44,12 +45,10 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
     final double totalWeight = completedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0) * (s.reps ?? 0)));
     final int totalExercises = historyExercises.length;
     
-    final Map<String, double> muscleFatigue = {};
+    final Map<int, double> muscleFatigue = {};
     void addMuscle(List<int> muscles, double amount) {
       for(final muscleId in muscles) {
-        final muscleName = muscleGroups.firstWhere((m) => m.id == muscleId).name;
-
-        muscleFatigue[muscleName] = ((muscleFatigue[muscleName] ?? 0) + amount).clamp(0.0, 1.0);
+        muscleFatigue[muscleId] = ((muscleFatigue[muscleId] ?? 0) + amount).clamp(0.0, 1.0);
       }
     }
     for(final te in completedExercises) {
@@ -261,7 +260,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
                             height: 50,
                             child: FilledButton(
                               onPressed: () async {
-                                await saveHistory(today);
+                                await saveHistory(today, muscleFatigue);
 
                                 if(context.mounted) Navigator.of(context).pop(true);
                               },
@@ -281,8 +280,10 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
     );
   }
 
-  Future<void> saveHistory(DateTime date) async {
+  Future<void> saveHistory(DateTime date, Map<int, double> musclesFatigued) async {
     final session = context.read<WorkoutSessionProvider>().session;
+
+    final muscleFatigueProvider = context.read<MuscleFatigueProvider>();
 
     if (session == null) return;
 
@@ -297,6 +298,10 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
     );
 
     await context.read<HistoryProvider>().add(history);
+
+    for(final entry in musclesFatigued.entries) {
+      await muscleFatigueProvider.increase(entry.key, entry.value);
+    }
   }
 }
 
@@ -473,14 +478,16 @@ String durationString(Duration duration) {
   return parts.join(' ');
 }
 
-Widget _muscleFatigueItem(String muscle, double value) {
+Widget _muscleFatigueItem(int muscleId, double value) {
+  final muscle = muscleGroups.firstWhere((e) => e.id == muscleId);
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(muscle),
+          Text(muscle.name),
           Text('${(value * 100).round()}%'),
         ],
       ),

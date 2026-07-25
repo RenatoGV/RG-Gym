@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rg_gym/config/data/exercises.dart';
@@ -7,7 +8,9 @@ import 'package:rg_gym/helpers/format_helper.dart';
 import 'package:rg_gym/models/history_workout.dart';
 import 'package:rg_gym/models/muscle_group.dart';
 import 'package:rg_gym/providers/history_provider.dart';
+import 'package:rg_gym/providers/muscle_fatigue_provider.dart';
 import 'package:rg_gym/screens/tabs/stats/widgets/equipment_stat.dart';
+import 'package:rg_gym/screens/tabs/stats/widgets/fatigue_state_item.dart';
 import 'package:rg_gym/screens/tabs/stats/widgets/muscle_count_list.dart';
 
 enum FilterDays {
@@ -36,6 +39,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
   @override
   Widget build(BuildContext context) {
     final history = context.watch<HistoryProvider>().history;
+    final fatiguedMuscles = context.watch<MuscleFatigueProvider>().fatiguedMuscles;
 
     List<HistoryWorkout> getByFilter() {
       final now = DateTime.now();
@@ -207,15 +211,15 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 fit: BoxFit.contain,
                               ),
 
-                              // ...historyWorkout.musclesWorked
-                              //   .where((m) => m.type == .front || m.type == .both)
-                              //   .map(
-                              //     (m) => Image.asset(
-                              //       'assets/images/muscles/frente_gm${m.id}.png',
-                              //       fit: .contain,
-                              //       color: AppColors.primary.withValues(alpha: 0.6),
-                              //     )
-                              //   )
+                              ...fatiguedMuscles
+                                .where((m) => m.muscle.type == .front || m.muscle.type == .both)
+                                .map(
+                                  (m) => Image.asset(
+                                    'assets/images/muscles/frente_gm${m.muscleId}.png',
+                                    fit: .contain,
+                                    color: m.stateColor.withValues(alpha: 0.6),
+                                  )
+                                )
                             ],
                           )
                         ),
@@ -231,15 +235,15 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                                 fit: BoxFit.contain,
                               ),
 
-                              // ...historyWorkout.musclesWorked
-                              //   .where((m) => m.type == .back || m.type == .both)
-                              //   .map(
-                              //     (m) => Image.asset(
-                              //       'assets/images/muscles/tras_gm${m.id}.png',
-                              //       fit: .contain,
-                              //       color: AppColors.primary.withValues(alpha: 0.6),
-                              //     )
-                              //   )
+                              ...fatiguedMuscles
+                                .where((m) => m.muscle.type == .back || m.muscle.type == .both)
+                                .map(
+                                  (m) => Image.asset(
+                                    'assets/images/muscles/tras_gm${m.muscleId}.png',
+                                    fit: .contain,
+                                    color: m.stateColor.withValues(alpha: 0.6),
+                                  )
+                                )
                             ],
                           )
                         ),
@@ -248,8 +252,23 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                   ),
 
                   const SizedBox(height: 30),
+
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    runAlignment: WrapAlignment.spaceBetween,
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      FatigueStateItem(state: .weakened),
+                      FatigueStateItem(state: .recovering),
+                      FatigueStateItem(state: .recovered),
+                      FatigueStateItem(state: .fatigued),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
                   TextButton.icon(
-                    onPressed: () {},
+                    onPressed: () => Navigator.pushNamed(context, '/fatigue'),
                     label: Text('Ver detalles', style: TextStyle(color: AppColors.primary, fontWeight: .bold)),
                     icon: Icon(Icons.navigate_next_rounded, color: AppColors.primary),
                     iconAlignment: .end,
@@ -584,7 +603,8 @@ Widget _activityBox(String title, String amount, String label) {
         children: [
           Text(title, style: const TextStyle(color: AppColors.text)),
           const SizedBox(height: 40),
-          Text.rich(
+          AutoSizeText.rich(
+            maxLines: 1,
             TextSpan(
               children: [
                 TextSpan(

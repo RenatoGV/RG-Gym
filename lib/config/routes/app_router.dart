@@ -16,4 +16,6 @@ class AppRouter {
   static const execution = '/execution';
 
   static const historyDetail = '/history';
+
+  static const fatigueDetail = '/fatigue';
 }

@@ -95,7 +95,7 @@ class HistoryWorkout {
 
   int get completedReps => completedExercises.fold(0, (sum, e) => sum + e.sets.fold(0, (setSum, s) => setSum + (s.reps ?? 0)));
 
-  double get totalWeight => completedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0) * (s.reps ?? 0)));
+  double get totalWeight => completedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0)));
 
   List<MapEntry<String, double>> get muscleFatigue {
     final fatigue = <String, double>{};

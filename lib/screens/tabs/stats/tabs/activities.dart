@@ -119,8 +119,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     }
 
     String getTotalWeight() {
-      final total = getByFilter()
-        .fold<double>(0, (sum, h) => sum + (h.totalWeight));
+      final total = getByFilter().fold<double>(0, (sum, h) => sum + (h.totalWeight));
 
       final roundedTotal = double.parse(total.toStringAsFixed(2));
 

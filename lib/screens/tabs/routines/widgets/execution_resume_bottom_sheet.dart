@@ -42,7 +42,7 @@ class _ExecutionResumeBottomSheetState extends State<ExecutionResumeBottomSheet>
     final int completedExercisesTotal = completedExercises.length;
     final int completedSets = completedExercises.fold(0, (sum, e) => sum + e.sets.length);
     final int completedReps = completedExercises.fold(0, (sum, e) => sum + e.sets.fold(0, (setSum, s) => setSum + (s.reps ?? 0)));
-    final double totalWeight = completedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0) * (s.reps ?? 0)));
+    final double totalWeight = completedExercises.fold(0.0, (sum, e) => sum + e.sets.fold(0.0, (setSum, s) => setSum + (s.weight ?? 0)));
     final int totalExercises = historyExercises.length;
     
     final Map<int, double> muscleFatigue = {};

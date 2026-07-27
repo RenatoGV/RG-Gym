@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:rg_gym/config/data/muscle_groups.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/models/exercise.dart';
+import 'package:rg_gym/models/history_workout.dart';
 import 'package:rg_gym/models/muscle_group.dart';
+import 'package:rg_gym/providers/history_provider.dart';
+import 'package:rg_gym/screens/tabs/stats/widgets/history_item.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 
 enum ExerciseInfoTab {
@@ -140,7 +145,7 @@ class _ExerciseInfoState extends State<ExerciseInfo> {
               child: switch(selectedTab) {
                 .statistic => const StatisticsTab(),
                 .instructions => InstructionsTab(exercise: widget.exercise, primaryMuscles: primaryMuscles, secondaryMuscles: secondaryMuscles),
-                .history => const HistoryTab(),
+                .history => HistoryTab(exerciseId: widget.exercise.id,),
               },
             ),
           ],
@@ -230,6 +235,7 @@ class InstructionsTab extends StatelessWidget {
       children: [
         if(exercise.preparation.isNotEmpty)
           Column(
+            crossAxisAlignment: .start,
             children: [
               const Text(
                 "Preparación",
@@ -244,6 +250,7 @@ class InstructionsTab extends StatelessWidget {
 
         if(exercise.execution.isNotEmpty)
           Column(
+            crossAxisAlignment: .start,
             children: [
               const Text(
                 "Ejecución",
@@ -270,6 +277,7 @@ class InstructionsTab extends StatelessWidget {
 
         if(exercise.details.isNotEmpty)
           Column(
+            crossAxisAlignment: .start,
             children: [
               const Text(
                 "Detalles",
@@ -442,26 +450,86 @@ class InstructionsTab extends StatelessWidget {
 }
 
 class HistoryTab extends StatelessWidget {
-  const HistoryTab({super.key});
+  final int exerciseId;
+  const HistoryTab({
+    super.key,
+    required this.exerciseId
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final historyByExercise = context.watch<HistoryProvider>().getHistoryByExercise(exerciseId);
+
+    final groupedHistory = <String, List<HistoryWorkout>>{};
+
+    for (final history in historyByExercise) {
+      final key = DateFormat('yyyy-MM').format(history.date);
+
+      groupedHistory.putIfAbsent(key, () => []).add(history);
+    }
+    
+    return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(height: 50),
-          Icon(
-            Icons.history,
-            color: AppColors.text,
-            size: 40,
-          ),
-          SizedBox(height: 10),
-          Text(
-            'No hay historial',
-            style: TextStyle(color: AppColors.text),
-            textAlign: TextAlign.center,
-          ),
+          (historyByExercise.isNotEmpty) ?
+            Column(
+              children: groupedHistory.entries.map((entry) {
+                final monthTitle = DateFormat('MMMM yyyy','es').format(entry.value.first.date);
+
+                return Column(
+                  children: [
+                    Text(
+                      toBeginningOfSentenceCase(monthTitle)!,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Container(
+                      width: .infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.backgroundSecondary,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: .stretch,
+                        children: List.generate(entry.value.length, (index) {
+                          return Column(
+                            children: [
+                              HistoryItem(historyWorkout: entry.value[index]),
+
+                              if (index != entry.value.length - 1)
+                                const Divider(color: AppColors.backgroundSecondary, thickness: 3, radius: BorderRadius.all(Radius.circular(2)),),
+                            ],
+                          );
+                        }),
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+                  ],
+                );
+              }).toList(),
+            ) :
+            Column(
+              children: [
+                SizedBox(height: 50),
+                Icon(
+                  Icons.history,
+                  color: AppColors.text,
+                  size: 40,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'No hay historial',
+                  style: TextStyle(color: AppColors.text),
+                ),
+              ],
+            )
         ],
       ),
     );

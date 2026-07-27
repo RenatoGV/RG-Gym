@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
 import 'package:rg_gym/providers/history_provider.dart';
@@ -30,6 +31,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
         crossAxisAlignment: .start,
         children: [
           TableCalendar(
+            headerStyle: HeaderStyle(
+              titleTextStyle: TextStyle(color: AppColors.primary, fontSize: 17, fontWeight: .w500),
+              titleCentered: true,
+              titleTextFormatter: (date, locale) {
+                final text = DateFormat.yMMMM(locale).format(date);
+                return text[0].toUpperCase() + text.substring(1);
+              },
+              leftChevronIcon: Icon(Icons.navigate_before_rounded, color: AppColors.primary),
+              rightChevronIcon: Icon(Icons.navigate_next_rounded, color: AppColors.primary)
+            ),
             calendarBuilders: CalendarBuilders(
               defaultBuilder: (context, day, focusedDay) {
                 final hasHistory = historyDays.contains(DateTime(day.year, day.month, day.day));

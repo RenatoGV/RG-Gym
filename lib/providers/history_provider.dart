@@ -63,4 +63,14 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
     await save();
   }
+
+  List<HistoryWorkout> getHistoryByExercise(int exerciseId) {
+    final history = _history.where((e) {
+      return e.completedExercises.any((te) => te.exercise == exerciseId);
+    }).toList();
+
+    history.sort((a, b) => b.date.compareTo(a.date));
+
+    return history;
+  }
 }

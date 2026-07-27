@@ -252,17 +252,38 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
 
                   const SizedBox(height: 30),
 
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    runAlignment: WrapAlignment.spaceBetween,
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      FatigueStateItem(state: .weakened),
-                      FatigueStateItem(state: .recovering),
-                      FatigueStateItem(state: .recovered),
-                      FatigueStateItem(state: .fatigued),
-                    ],
+                  Padding(
+                    padding: .symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: .spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 125,
+                              child: FatigueStateItem(state: .weakened),
+                            ),
+                            SizedBox(
+                              width: 125,
+                              child: FatigueStateItem(state: .recovering),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: .spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: 125,
+                              child: FatigueStateItem(state: .recovered),
+                            ),
+                            SizedBox(
+                              width: 125,
+                              child: FatigueStateItem(state: .fatigued),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 15),

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rg_gym/config/theme/app_colors.dart';
@@ -97,17 +98,35 @@ class _MuscleFatigueScreenState extends State<MuscleFatigueScreen> {
               const SizedBox(height: 30),
 
               Padding(
-                padding: .symmetric(horizontal: 25),
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  runAlignment: WrapAlignment.spaceBetween,
-                  spacing: 12,
-                  runSpacing: 12,
+                padding: .symmetric(horizontal: 30),
+                child: Column(
                   children: [
-                    FatigueStateItem(state: .weakened),
-                    FatigueStateItem(state: .recovering),
-                    FatigueStateItem(state: .recovered),
-                    FatigueStateItem(state: .fatigued),
+                    Row(
+                      mainAxisAlignment: .spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 125,
+                          child: FatigueStateItem(state: .weakened),
+                        ),
+                        SizedBox(
+                          width: 125,
+                          child: FatigueStateItem(state: .recovering),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: .spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: 125,
+                          child: FatigueStateItem(state: .recovered),
+                        ),
+                        SizedBox(
+                          width: 125,
+                          child: FatigueStateItem(state: .fatigued),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -174,7 +193,7 @@ class _MuscleFatigueScreenState extends State<MuscleFatigueScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            Text(fatiguedMuscle.muscle.name, style: const TextStyle(fontWeight: .w500)),
+            AutoSizeText(maxLines: 1, fatiguedMuscle.muscle.name, style: const TextStyle(fontWeight: .w500)),
           ],
         ),
       )

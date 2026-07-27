@@ -1,7 +1,9 @@
 class FormatHelper {
   static String formatDouble(double value) {
-    return value.remainder(1) == 0
-        ? value.toInt().toString()
-        : value.toString();
+    final rounded = double.parse(value.toStringAsFixed(2));
+
+    return rounded.remainder(1) == 0
+        ? rounded.toInt().toString()
+        : rounded.toString();
   }
 }

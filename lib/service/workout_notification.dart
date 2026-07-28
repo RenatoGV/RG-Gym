@@ -44,7 +44,7 @@ class WorkoutNotification {
         ),
         NotificationActionButton(
           key: 'ADD_15',
-          label: '+15 s',
+          label: '+ 15',
           actionType: .SilentAction
         )
       ],

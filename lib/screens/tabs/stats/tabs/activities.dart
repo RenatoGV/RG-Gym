@@ -12,6 +12,7 @@ import 'package:rg_gym/providers/muscle_fatigue_provider.dart';
 import 'package:rg_gym/screens/tabs/stats/widgets/equipment_stat.dart';
 import 'package:rg_gym/screens/tabs/stats/widgets/fatigue_state_item.dart';
 import 'package:rg_gym/screens/tabs/stats/widgets/muscle_count_list.dart';
+import 'package:rg_gym/screens/tabs/stats/widgets/stats_bottom_sheet.dart';
 
 enum FilterDays {
   seven,
@@ -374,18 +375,18 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
               )
             ),
             const SizedBox(height: 10),
-            _activityBoxDetail('Duración de los ejercicios', totalDuration(), totalDurationLabel()),
+            _activityBoxDetail(context, 'Duración de los ejercicios', totalDuration(), totalDurationLabel(), .duration),
             const SizedBox(height: 10),
-            _activityBoxDetail('Calorías', getCaloriesSummary(), 'kcal'),
+            _activityBoxDetail(context, 'Calorías', getCaloriesSummary(), 'kcal', .calories),
             const SizedBox(height: 10),
-            _activityBoxDetail('Ejercicios', '${totalExercises()}', 'ejercicio${totalExercises() == 1 ? '' : 's'}'),
+            _activityBoxDetail(context, 'Ejercicios', '${totalExercises()}', 'ejercicio${totalExercises() == 1 ? '' : 's'}', .exercises),
             const SizedBox(height: 10),
             Row(
               spacing: 10,
               children: [
-                _activityBox('Series', '${getTotalSeries()}', 'series'),
-                _activityBox('Reps', '${getTotalReps()}', 'rep${getTotalReps() == 1 ? '' : 's'}'),
-                _activityBox('Carga', getTotalWeight(), 'kg'),
+                _activityBox(context, 'Series', '${getTotalSeries()}', 'series', .sets),
+                _activityBox(context, 'Reps', '${getTotalReps()}', 'rep${getTotalReps() == 1 ? '' : 's'}', .reps),
+                _activityBox(context, 'Carga', getTotalWeight(), 'kg', .weight),
               ],
             ),
 
@@ -553,7 +554,7 @@ String daysText(FilterDays filter) {
   };
 }
 
-Widget _activityBoxDetail(String title, String amount, String label) {
+Widget _activityBoxDetail(BuildContext context, String title, String amount, String label, StatType statType) {
   return Container(
     width: .infinity,
     padding: .symmetric(horizontal: 15, vertical: 10),
@@ -592,7 +593,12 @@ Widget _activityBoxDetail(String title, String amount, String label) {
           ],
         ),
         TextButton.icon(
-          onPressed: () {},
+          onPressed: () async => await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => StatsBottomSheet(type: statType),
+          ),
           label: Text('Ver detalles', style: TextStyle(color: AppColors.text)),
           icon: Icon(Icons.navigate_next_rounded, color: AppColors.text),
           iconAlignment: .end,
@@ -607,43 +613,51 @@ Widget _activityBoxDetail(String title, String amount, String label) {
   );
 }
 
-Widget _activityBox(String title, String amount, String label) {
+Widget _activityBox(BuildContext context, String title, String amount, String label, StatType statType) {
   return Expanded(
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 2,
-          color: AppColors.backgroundSecondary,
-        ),
-        borderRadius: BorderRadius.circular(7),
+    child: GestureDetector(
+      onTap: () async => await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => StatsBottomSheet(type: statType),
       ),
-      child: Column(
-        crossAxisAlignment: .center,
-        children: [
-          Text(title, style: const TextStyle(color: AppColors.text)),
-          const SizedBox(height: 40),
-          AutoSizeText.rich(
-            maxLines: 1,
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: amount,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: .bold
-                  )
-                ),
-                TextSpan(
-                  text: ' $label',
-                  style: TextStyle(
-                    fontSize: 12
-                  )
-                ),
-              ]
-            )
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 2,
+            color: AppColors.backgroundSecondary,
           ),
-        ],
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Column(
+          crossAxisAlignment: .center,
+          children: [
+            Text(title, style: const TextStyle(color: AppColors.text)),
+            const SizedBox(height: 40),
+            AutoSizeText.rich(
+              maxLines: 1,
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: amount,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: .bold
+                    )
+                  ),
+                  TextSpan(
+                    text: ' $label',
+                    style: TextStyle(
+                      fontSize: 12
+                    )
+                  ),
+                ]
+              )
+            ),
+          ],
+        ),
       ),
     ),
   );

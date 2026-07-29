@@ -85,6 +85,7 @@ class WorkoutSessionManager extends ChangeNotifier {
 
   Duration phaseTime = Duration.zero;
   Duration preparationTime = const Duration(seconds: 15);
+  Duration phaseTotalTime = Duration.zero;
 
   Duration restDuration = Duration.zero;
   Duration preparationDuration = Duration.zero;
@@ -158,6 +159,25 @@ class WorkoutSessionManager extends ChangeNotifier {
     final minutes = phaseTime.inMinutes.remainder(60);
 
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  double get phaseProgress {
+    switch(phase) {
+      case .preparation:
+      case .rest:
+        if(phaseTotalTime.inSeconds == 0) return 1;
+        return 1 - (phaseTime.inSeconds / phaseTotalTime.inSeconds).clamp(0.0, 1.0);
+      
+      case .execution:
+        if(currentExercise.type != .time) return 0;
+
+        if (phaseTotalTime.inSeconds == 0) return 1;
+
+        return (1 - (phaseTime.inSeconds / phaseTotalTime.inSeconds)).clamp(0.0, 1.0);
+
+        case .finished:
+          return 1;
+    }
   }
 
   String get executionSummary {
@@ -238,6 +258,8 @@ class WorkoutSessionManager extends ChangeNotifier {
     }
 
     phaseTime += const Duration(seconds: 15);
+    phaseTotalTime += const Duration(seconds: 15);
+
     notifyListeners();
   }
 
@@ -383,6 +405,7 @@ class WorkoutSessionManager extends ChangeNotifier {
   void _startPreparation() {
     phase = WorkoutPhase.preparation;
     phaseTime = preparationTime;
+    phaseTotalTime = preparationTime;
 
     notifyListeners();
   }
@@ -392,8 +415,10 @@ class WorkoutSessionManager extends ChangeNotifier {
 
     if (currentExercise.type == TrainingType.time) {
       phaseTime = currentSet.time ?? Duration.zero;
+      phaseTotalTime = phaseTime;
     } else {
       phaseTime = Duration.zero;
+      phaseTotalTime = Duration.zero;
     }
 
     notifyListeners();
@@ -404,6 +429,7 @@ class WorkoutSessionManager extends ChangeNotifier {
     phase = .rest;
     _restFinishedNotified = false;
     phaseTime = Duration(seconds: currentExercise.restTime);
+    phaseTotalTime = phaseTime;
 
     notifyListeners();
   }

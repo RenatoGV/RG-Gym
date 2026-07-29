@@ -35,15 +35,6 @@ class _StatisticsChartState extends State<StatisticsChart> {
   Widget build(BuildContext context) {
     final points = widget.points;
     final average = widget.average;
-    
-    if (points.isEmpty) {
-      return const SizedBox(
-        height: 250,
-        child: Center(
-          child: Text("Sin datos"),
-        ),
-      );
-    }
 
     final maxY = [average, ...points.map((e) => e.value)].reduce((a, b) => a > b ? a : b);
     final minY = [average, ...points.map((e) => e.value)].reduce((a, b) => a < b ? a : b);

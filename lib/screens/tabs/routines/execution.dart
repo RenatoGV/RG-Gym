@@ -14,6 +14,7 @@ import 'package:rg_gym/service/workout_notification.dart';
 import 'package:rg_gym/service/workout_session_manager.dart';
 import 'package:rg_gym/shared/app_bar.dart';
 import 'package:rg_gym/shared/widgets/pulse_button.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class Execution extends StatefulWidget {
   const Execution({super.key});
@@ -42,6 +43,8 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
+    WakelockPlus.enable();
+
     WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -64,6 +67,8 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    WakelockPlus.disable();
+
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -243,6 +248,8 @@ class _ExecutionState extends State<Execution> with WidgetsBindingObserver {
                       _counter(session),
                       const SizedBox(height: 15),
                       _buttons(session),
+                      const SizedBox(height: 15),
+                      _progress(session),
                       const SizedBox(height: 15)
                     ]
                   ),
@@ -365,6 +372,24 @@ Widget _buttons(WorkoutSessionManager session) {
         ),
       ],
     )
+  );
+}
+
+Widget _progress(WorkoutSessionManager session) {
+  return TweenAnimationBuilder<double>(
+    tween: Tween<double>(end: session.phaseProgress),
+    duration: const Duration(milliseconds: 1000),
+    curve: Curves.linear,
+    builder: (context, value, child) {
+      return LinearProgressIndicator(
+        value: value,
+        minHeight: 7,
+        backgroundColor: AppColors.background,
+        valueColor: const AlwaysStoppedAnimation(
+          AppColors.primary,
+        ),
+      );
+    },
   );
 }
 

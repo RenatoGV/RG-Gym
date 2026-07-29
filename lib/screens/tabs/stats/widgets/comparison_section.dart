@@ -151,15 +151,13 @@ class ComparisonSection extends StatelessWidget {
     final current = history.where((e) {
       final date = DateTime(e.date.year, e.date.month, e.date.day);
 
-      return !date.isBefore(currentStart) &&
-          !date.isAfter(today);
+      return !date.isBefore(currentStart) && !date.isAfter(today);
     }).toList();
 
     final previous = history.where((e) {
       final date = DateTime(e.date.year, e.date.month, e.date.day);
 
-      return !date.isBefore(previousStart) &&
-          !date.isAfter(previousEnd);
+      return !date.isBefore(previousStart) && !date.isAfter(previousEnd);
     }).toList();
 
     return ComparisonData(

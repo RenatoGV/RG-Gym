@@ -39,7 +39,7 @@ const _descriptions = {
 
   StatisticType.oneRm: _StatisticDescription(
     title: '1RM',
-    description: 'Presenta la estimación de la carga máxima que puedes levantar en una sola repetición en ese entrenamiento, basada en el peso y el número de repeticiones utilizadas en un set'
+    description: 'Presenta la estimación de la carga máxima que puedes levantar en una sola repetición en ese entrenamiento, basada en el peso y el número de repeticiones utilizadas en un set.'
   ),
 
   StatisticType.weight: _StatisticDescription(
@@ -83,6 +83,12 @@ class _StatisticsTabState extends State<StatisticsTab> {
       history: history,
       type: selectedType
     );
+
+    final hasData = statistics.points.any((p) => p.value > 0);
+
+    if(!hasData) {
+      return _emptyStatistics();
+    }
 
     return Column(
       crossAxisAlignment: .start,
@@ -267,7 +273,7 @@ Widget _emptyStatistics() {
         ),
         SizedBox(height: 10),
         Text(
-          'Sin datos para el gráfico',
+          'Sin datos de carga en este ejercicio',
           style: TextStyle(color: AppColors.text),
           textAlign: TextAlign.center,
         ),

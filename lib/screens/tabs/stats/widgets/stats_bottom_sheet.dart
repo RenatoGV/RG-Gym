@@ -463,10 +463,39 @@ Widget _buildChart(List<ChartData> data, StatType type, FilterDays filter) {
     .ninety => 20
   };
 
+  
+  String unit() {
+    return switch(type){
+      .duration => 'min',
+      .calories => 'kcal',
+      .exercises => 'ejercicios',
+      .sets => 'series',
+      .reps => 'reps',
+      .weight => 'kg',
+    };
+  }
+
   return Padding(
     padding: const .only(top: 10),
     child: BarChart(
       BarChartData(
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBorderRadius: BorderRadius.circular(10),
+            tooltipPadding: const EdgeInsets.all(8),
+            getTooltipColor: (_) => AppColors.backgroundSecondary,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                '${FormatHelper.formatDouble(rod.toY)} ${unit()}',
+                const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
+          ),
+        ),
         maxY: formattedMaxY,
         alignment: BarChartAlignment.spaceBetween,
         borderData: FlBorderData(show: false),

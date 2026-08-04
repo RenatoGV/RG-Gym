@@ -1,13 +1,17 @@
 # 🏋️ RG Gym
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.13.0-blue.svg)](https://flutter.dev/)
-[![Dart](https://img.shields.io/badge/Dart-3.11.5-blue.svg)](https://dart.dev/)
+<div align="center">
+  <img src="./assets/icon/app_icon.png" alt="RG Music Logo" width="120" height="120">
+  
+  ### Aplicación de entrenamiento personal para Android e iOS
+  
+  RG Gym permite crear rutinas propias, elegir ejercicios por grupo muscular, gestionar el historial y controlar sesiones de entrenamiento con notificaciones y tareas en segundo plano.
+  
+  [![Flutter](https://img.shields.io/badge/Flutter-3.13.0-blue.svg)](https://flutter.dev/)
+  [![Dart](https://img.shields.io/badge/Dart-3.11.5-blue.svg)](https://dart.dev/)
+</div>  
 
-Aplicación de entrenamiento personal para Android e iOS construida con Flutter.
-
-RG Gym permite crear rutinas propias, elegir ejercicios por grupo muscular, gestionar el historial y controlar sesiones de entrenamiento con notificaciones y tareas en segundo plano.
-
-## ✨ Características principales
+## ✨ Características
 
 ### 🏃 Rutinas personalizadas
 - Crear, editar, duplicar y eliminar rutinas.
